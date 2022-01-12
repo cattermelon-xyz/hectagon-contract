@@ -32,27 +32,27 @@ describe("Treasury", async () => {
         mineBlock();
         await staking.rebase();
 
-        return await sOhm.index();
+        return await sHecta.index();
     };
 
     let deployer, alice, bob, carol;
     let erc20Factory;
     let stakingFactory;
-    let ohmFactory;
-    let sOhmFactory;
-    let gOhmFactory;
+    let hectaFactory;
+    let sHectaFactory;
+    let gHectaFactory;
     let treasuryFactory;
     let distributorFactory;
     let authFactory;
-    let mockSOhmFactory;
+    let mockSHectaFactory;
 
     let auth;
     let dai;
     let lpToken;
-    let ohm;
-    let sOhm;
+    let hecta;
+    let sHecta;
     let staking;
-    let gOhm;
+    let gHecta;
     let treasury;
     let distributor;
 
@@ -67,14 +67,14 @@ describe("Treasury", async () => {
 
         //erc20Factory = await ethers.getContractFactory('MockERC20');
         // TODO use dai as erc20 for now
-        authFactory = await ethers.getContractFactory("OlympusAuthority");
+        authFactory = await ethers.getContractFactory("HectagonAuthority");
         erc20Factory = await ethers.getContractFactory("DAI");
 
-        stakingFactory = await ethers.getContractFactory("OlympusStaking");
-        ohmFactory = await ethers.getContractFactory("OlympusERC20Token");
-        sOhmFactory = await ethers.getContractFactory("sOlympus");
-        gOhmFactory = await ethers.getContractFactory("gOHM");
-        treasuryFactory = await ethers.getContractFactory("OlympusTreasury");
+        stakingFactory = await ethers.getContractFactory("HectagonStaking");
+        hectaFactory = await ethers.getContractFactory("HectagonERC20Token");
+        sHectaFactory = await ethers.getContractFactory("sHectagon");
+        gHectaFactory = await ethers.getContractFactory("gHECTA");
+        treasuryFactory = await ethers.getContractFactory("HectagonTreasury");
         distributorFactory = await ethers.getContractFactory("Distributor");
     });
 
@@ -92,22 +92,22 @@ describe("Treasury", async () => {
             deployer.address,
             deployer.address
         ); // TODO
-        ohm = await ohmFactory.deploy(auth.address);
-        sOhm = await sOhmFactory.deploy();
-        gOhm = await gOhmFactory.deploy(sOhm.address, sOhm.address); // Call migrate immediately
+        hecta = await hectaFactory.deploy(auth.address);
+        sHecta = await sHectaFactory.deploy();
+        gHecta = await gHectaFactory.deploy(sHecta.address, sHecta.address); // Call migrate immediately
         staking = await stakingFactory.deploy(
-            ohm.address,
-            sOhm.address,
-            gOhm.address,
+            hecta.address,
+            sHecta.address,
+            gHecta.address,
             "10",
             "1",
             "9",
             auth.address
         );
-        treasury = await treasuryFactory.deploy(ohm.address, "0", auth.address);
+        treasury = await treasuryFactory.deploy(hecta.address, "0", auth.address);
         distributor = await distributorFactory.deploy(
             treasury.address,
-            ohm.address,
+            hecta.address,
             staking.address,
             auth.address
         );
@@ -115,21 +115,21 @@ describe("Treasury", async () => {
         // Setup for each component
 
         // Needed for treasury deposit
-        //await gOhm.migrate(staking.address, sOhm.address);
+        //await gHecta.migrate(staking.address, sHecta.address);
         await dai.mint(deployer.address, initialMint);
         await dai.approve(treasury.address, LARGE_APPROVAL);
 
-        // Needed to spend deployer's OHM
-        await ohm.approve(staking.address, LARGE_APPROVAL);
+        // Needed to spend deployer's HECTA
+        await hecta.approve(staking.address, LARGE_APPROVAL);
 
-        // To get past OHM contract guards
+        // To get past HECTA contract guards
         await auth.pushVault(treasury.address, true);
 
-        // Initialization for sOHM contract.
+        // Initialization for sHecta contract.
         // Set index to 10
-        await sOhm.setIndex("10000000000");
-        await sOhm.setgOHM(gOhm.address);
-        await sOhm.initialize(staking.address, treasury.address);
+        await sHecta.setIndex("10000000000");
+        await sHecta.setgHecta(gHecta.address);
+        await sHecta.initialize(staking.address, treasury.address);
 
         // Set distributor staking contract
         await staking.setDistributor(distributor.address);
@@ -144,10 +144,10 @@ describe("Treasury", async () => {
         await treasury.enable("4", deployer.address, ZERO_ADDRESS);
         // toggle DAI as reserve token
         await treasury.enable("2", dai.address, ZERO_ADDRESS);
-        // set sOHM
-        await treasury.enable("9", sOhm.address, ZERO_ADDRESS);
+        // set sHecta
+        await treasury.enable("9", sHecta.address, ZERO_ADDRESS);
 
-        // Deposit 10,000 DAI to treasury, 1,000 OHM gets minted to deployer with 9000 as excess reserves (ready to be minted)
+        // Deposit 10,000 DAI to treasury, 1,000 HECTA gets minted to deployer with 9000 as excess reserves (ready to be minted)
         await treasury
             .connect(deployer)
             .deposit("10000000000000000000000", dai.address, "9000000000000");
@@ -155,17 +155,17 @@ describe("Treasury", async () => {
         // Add staking as recipient of distributor with a test reward rate
         await distributor.addRecipient(staking.address, initialRewardRate);
 
-        // Get sOHM in deployer wallet
-        const sohmAmount = "1000000000000";
-        await ohm.approve(staking.address, sohmAmount);
-        await staking.stake(deployer.address, sohmAmount, true, true);
+        // Get sHecta in deployer wallet
+        const sHectaAmount = "1000000000000";
+        await hecta.approve(staking.address, sHectaAmount);
+        await staking.stake(deployer.address, sHectaAmount, true, true);
 
-        // Transfer 10 sOHM to alice for testing
-        await sOhm.transfer(alice.address, debtLimit);
+        // Transfer 10 sHecta to alice for testing
+        await sHecta.transfer(alice.address, debtLimit);
     });
 
     it("should not have debt logged for alice", async () => {
-        expect(await sOhm.debtBalances(alice.address)).to.equal(0);
+        expect(await sHecta.debtBalances(alice.address)).to.equal(0);
     });
 
     it("should not have alice as a debtor", async () => {
@@ -192,19 +192,19 @@ describe("Treasury", async () => {
         await treasury.enable(7, alice.address, ZERO_ADDRESS);
         await treasury.setDebtLimit(alice.address, debtLimit);
         await treasury.connect(alice).incurDebt(1e9, dai.address);
-        expect(await sOhm.debtBalances(alice.address)).to.equal(1);
+        expect(await sHecta.debtBalances(alice.address)).to.equal(1);
     });
 
     it("should allow alice to borrow up to her balance in dai", async () => {
-        let staked = await sOhm.balanceOf(alice.address);
+        let staked = await sHecta.balanceOf(alice.address);
         await treasury.enable(7, alice.address, ZERO_ADDRESS);
         await treasury.setDebtLimit(alice.address, debtLimit);
         await treasury.connect(alice).incurDebt(String(staked * 1000000000), dai.address);
-        expect(await sOhm.debtBalances(alice.address)).to.equal(staked);
+        expect(await sHecta.debtBalances(alice.address)).to.equal(staked);
     });
 
     it("should not allow alice to borrow more than her balance in dai", async () => {
-        let staked = await sOhm.balanceOf(alice.address);
+        let staked = await sHecta.balanceOf(alice.address);
         await treasury.enable(7, alice.address, ZERO_ADDRESS);
         await treasury.setDebtLimit(alice.address, debtLimit);
         await expect(
@@ -212,50 +212,50 @@ describe("Treasury", async () => {
         ).to.be.revertedWith("");
     });
 
-    it("should allow alice to borrow up to her balance in ohm", async () => {
-        let staked = await sOhm.balanceOf(alice.address);
+    it("should allow alice to borrow up to her balance in hecta", async () => {
+        let staked = await sHecta.balanceOf(alice.address);
         await treasury.enable(10, alice.address, ZERO_ADDRESS);
         await treasury.setDebtLimit(alice.address, debtLimit);
-        await treasury.connect(alice).incurDebt(staked, ohm.address);
-        expect(await sOhm.debtBalances(alice.address)).to.equal(staked);
+        await treasury.connect(alice).incurDebt(staked, hecta.address);
+        expect(await sHecta.debtBalances(alice.address)).to.equal(staked);
     });
 
-    it("should not allow alice to borrow more than her balance in sOhm", async () => {
-        let staked = await sOhm.balanceOf(alice.address);
+    it("should not allow alice to borrow more than her balance in sHecta", async () => {
+        let staked = await sHecta.balanceOf(alice.address);
         await treasury.enable(10, alice.address, ZERO_ADDRESS);
         await treasury.setDebtLimit(alice.address, debtLimit * 2);
         await expect(
-            treasury.connect(alice).incurDebt(String(staked + 1), ohm.address)
-        ).to.be.revertedWith("sOHM: insufficient balance");
+            treasury.connect(alice).incurDebt(String(staked + 1), hecta.address)
+        ).to.be.revertedWith("sHecta: insufficient balance");
     });
 
     it("should not allow alice to borrow more than her debt limit", async () => {
-        sOhm.transfer(alice.address, debtLimit);
-        let staked = await sOhm.balanceOf(alice.address);
+        sHecta.transfer(alice.address, debtLimit);
+        let staked = await sHecta.balanceOf(alice.address);
         await treasury.enable(10, alice.address, ZERO_ADDRESS);
         await treasury.setDebtLimit(alice.address, debtLimit);
-        await expect(treasury.connect(alice).incurDebt(staked, ohm.address)).to.be.revertedWith(
+        await expect(treasury.connect(alice).incurDebt(staked, hecta.address)).to.be.revertedWith(
             "Treasury: exceeds limit"
         );
     });
 
     it("should allow alice to repay in dai", async () => {
-        let staked = await sOhm.balanceOf(alice.address);
+        let staked = await sHecta.balanceOf(alice.address);
         await treasury.enable(7, alice.address, ZERO_ADDRESS);
         await treasury.setDebtLimit(alice.address, debtLimit);
         await treasury.connect(alice).incurDebt(String(staked * 1e9), dai.address);
         await dai.connect(alice).approve(treasury.address, String(staked * 1e9));
         await treasury.connect(alice).repayDebtWithReserve(String(staked * 1e9), dai.address);
-        expect(await sOhm.debtBalances(alice.address)).to.equal(0);
+        expect(await sHecta.debtBalances(alice.address)).to.equal(0);
     });
 
-    it("should allow alice to repay her debt in ohm", async () => {
-        let staked = await sOhm.balanceOf(alice.address);
+    it("should allow alice to repay her debt in hecta", async () => {
+        let staked = await sHecta.balanceOf(alice.address);
         await treasury.enable(10, alice.address, ZERO_ADDRESS);
         await treasury.setDebtLimit(alice.address, debtLimit);
-        await treasury.connect(alice).incurDebt(staked, ohm.address);
-        await ohm.connect(alice).approve(treasury.address, staked);
-        await treasury.connect(alice).repayDebtWithOHM(staked);
-        expect(await sOhm.debtBalances(alice.address)).to.equal(0);
+        await treasury.connect(alice).incurDebt(staked, hecta.address);
+        await hecta.connect(alice).approve(treasury.address, staked);
+        await treasury.connect(alice).repayDebtWithHECTA(staked);
+        expect(await sHecta.debtBalances(alice.address)).to.equal(0);
     });
 });

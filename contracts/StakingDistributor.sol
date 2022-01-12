@@ -8,9 +8,9 @@ import "./interfaces/IERC20.sol";
 import "./interfaces/ITreasury.sol";
 import "./interfaces/IDistributor.sol";
 
-import "./types/OlympusAccessControlled.sol";
+import "./types/HectagonAccessControlled.sol";
 
-contract Distributor is IDistributor, OlympusAccessControlled {
+contract Distributor is IDistributor, HectagonAccessControlled {
     /* ========== DEPENDENCIES ========== */
 
     using SafeMath for uint256;
@@ -18,7 +18,7 @@ contract Distributor is IDistributor, OlympusAccessControlled {
 
     /* ====== VARIABLES ====== */
 
-    IERC20 private immutable ohm;
+    IERC20 private immutable hecta;
     ITreasury private immutable treasury;
     address private immutable staking;
 
@@ -45,14 +45,14 @@ contract Distributor is IDistributor, OlympusAccessControlled {
 
     constructor(
         address _treasury,
-        address _ohm,
+        address _hecta,
         address _staking,
         address _authority
-    ) OlympusAccessControlled(IOlympusAuthority(_authority)) {
+    ) HectagonAccessControlled(IHectagonAuthority(_authority)) {
         require(_treasury != address(0), "Zero address: Treasury");
         treasury = ITreasury(_treasury);
-        require(_ohm != address(0), "Zero address: OHM");
-        ohm = IERC20(_ohm);
+        require(_hecta != address(0), "Zero address: hecta");
+        hecta = IERC20(_hecta);
         require(_staking != address(0), "Zero address: Staking");
         staking = _staking;
     }
@@ -125,7 +125,7 @@ contract Distributor is IDistributor, OlympusAccessControlled {
         @return uint
      */
     function nextRewardAt(uint256 _rate) public view override returns (uint256) {
-        return ohm.totalSupply().mul(_rate).div(rateDenominator);
+        return hecta.totalSupply().mul(_rate).div(rateDenominator);
     }
 
     /**

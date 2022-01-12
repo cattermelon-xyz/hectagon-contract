@@ -67,7 +67,6 @@ contract BondDepositoryTest is DSTest {
         staking = new OlympusStaking(address(ohm), address(sohm), address(gohm), 8, 0, 0, address(authority));
 
         sohm.initialize(address(staking), address(treasury));
-        gohm.migrate(address(staking), address(sohm));
 
         bondDepository = new OlympusBondDepository(address(ohm), address(treasury), address(authority));
 

@@ -1,107 +1,270 @@
 const { ethers } = require("hardhat");
 
 async function main() {
-    const [deployer] = await ethers.getSigners();
-    console.log("Deploying contracts with the account: " + deployer.address);
+    const [deployer, MockDAO] = await ethers.getSigners();
+    console.log("Deployer: " + deployer.address);
 
-    const DAI = "0xB2180448f8945C8Cc8AE9809E67D6bd27d8B2f2C";
-    const oldOHM = "0xC0b491daBf3709Ee5Eb79E603D73289Ca6060932";
-    const oldsOHM = "0x1Fecda1dE7b6951B248C0B62CaeBD5BAbedc2084";
-    const oldStaking = "0xC5d3318C0d74a72cD7C55bdf844e24516796BaB2";
-    const oldwsOHM = "0xe73384f11Bb748Aa0Bc20f7b02958DF573e6E2ad";
-    const sushiRouter = "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506";
-    const uniRouter = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
-    const oldTreasury = "0x0d722D813601E48b7DAcb2DF9bae282cFd98c6E7";
 
-    const FRAX = "0x2f7249cb599139e560f0c81c269ab9b04799e453";
-    const LUSD = "0x45754df05aa6305114004358ecf8d04ff3b84e26";
+    // Initial staking index
+    const initialIndex = "1000000000";
+    // 4547419269
 
-    const Authority = await ethers.getContractFactory("OlympusAuthority");
+    // First block epoch occurs
+    const firstEpochBlock = "15643243";
+
+    // What epoch will be first epoch
+    const firstEpochNumber = "0";
+
+    // How many blocks are in each epoch
+    const epochLengthInBlocks = "120";
+
+    // Initial reward rate for epoch
+    const initialRewardRate = "3000";
+
+    // Ethereum 0 address, used when toggling changes in treasury
+    const zeroAddress = "0x0000000000000000000000000000000000000000";
+
+    // Large number for approval for BUSD
+    const largeApproval = "100000000000000000000000000000000";
+
+    // Initial mint for BUSD (10,000,000)
+
+    // DAI bond BCV
+    const busdBondBCV = "1000000";
+
+    // Bond vesting length in blocks. 33110 ~ 5 days
+    const bondVestingLength = "6000";
+
+    // Min bond price
+    const minBondPrice = "1000"; // = 10usd
+
+    // Max bond payout
+    const maxBondPayout = "50";
+
+    // DAO fee for bond
+    const bondFee = "10000";
+
+    // Max debt bond can take on
+    const maxBondDebt = "1000000000000000";
+
+    // Initial Bond debt
+    const intialBondDebt = "0";
+
+    // Deploy Authority
+    const Authority = await ethers.getContractFactory("HectagonAuthority");
     const authority = await Authority.deploy(
         deployer.address,
         deployer.address,
         deployer.address,
         deployer.address
     );
+    console.log("Authority: " + authority.address);
 
-    const Migrator = await ethers.getContractFactory("OlympusTokenMigrator");
-    const migrator = await Migrator.deploy(
-        oldOHM,
-        oldsOHM,
-        oldTreasury,
-        oldStaking,
-        oldwsOHM,
-        sushiRouter,
-        uniRouter,
-        "0",
-        authority.address
-    );
+    // Deploy HECTA
+    const HECTA = await ethers.getContractFactory("HectagonERC20Token");
+    const hecta = await HECTA.deploy(authority.address);
+    console.log("HECTA: " + hecta.address);
 
-    const firstEpochNumber = "550";
-    const firstBlockNumber = "9505000";
 
-    const OHM = await ethers.getContractFactory("OlympusERC20Token");
-    const ohm = await OHM.deploy(authority.address);
+    // Deploy bonding calc
+    const HectagonBondingCalculator = await ethers.getContractFactory("HectagonBondingCalculator");
+    const hetagonBondingCalculator = await HectagonBondingCalculator.deploy(hecta.address);
+    console.log("HectagonBondingCalculator: " + hetagonBondingCalculator.address);
 
-    const SOHM = await ethers.getContractFactory("sOlympus");
-    const sOHM = await SOHM.deploy();
 
-    const GOHM = await ethers.getContractFactory("gOHM");
-    const gOHM = await GOHM.deploy(migrator.address, sOHM.address);
+    // Deploy mock BUSD
+    const BUSD = await ethers.getContractFactory("BEP20Token");
+    const busd = await BUSD.deploy(); // 31 mil token to deployer
+    console.log("BUSD: " + busd.address);
 
-    await migrator.setgOHM(gOHM.address);
 
-    const OlympusTreasury = await ethers.getContractFactory("OlympusTreasury");
-    const olympusTreasury = await OlympusTreasury.deploy(ohm.address, "0", authority.address);
+    // Deploy sHECTA
+    const SHECTA = await ethers.getContractFactory("sHectagon");
+    const sHECTA = await SHECTA.deploy();
+    console.log("SHECTA: " + sHECTA.address);
 
-    await olympusTreasury.queueTimelock("0", migrator.address, migrator.address);
-    await olympusTreasury.queueTimelock("8", migrator.address, migrator.address);
-    await olympusTreasury.queueTimelock("2", DAI, DAI);
-    await olympusTreasury.queueTimelock("2", FRAX, FRAX);
-    await olympusTreasury.queueTimelock("2", LUSD, LUSD);
 
-    await authority.pushVault(olympusTreasury.address, true); // replaces ohm.setVault(treasury.address)
+    // Deploy GHECTA
+    const GHECTA = await ethers.getContractFactory("gHECTA");
+    const gHECTA = await GHECTA.deploy(sHECTA.address);
+    console.log("GHECTA: " + gHECTA.address);
 
-    const OlympusStaking = await ethers.getContractFactory("OlympusStaking");
-    const staking = await OlympusStaking.deploy(
-        ohm.address,
-        sOHM.address,
-        gOHM.address,
-        "2200",
+    // Deploy Circulating Supply Conrtact
+    const HECTACirculatingSupplyConrtact = await ethers.getContractFactory("HectaCirculatingSupplyConrtact");
+    const hECTACirculatingSupplyConrtact = await HECTACirculatingSupplyConrtact.deploy();
+    console.log("HectaCirculatingSupplyConrtact: " + hECTACirculatingSupplyConrtact.address);
+
+    await hECTACirculatingSupplyConrtact.initialize(hecta.address);
+    console.log("Add hecta circulation supply")
+
+
+    // Deploy Treasury
+    const HectagonTreasury = await ethers.getContractFactory("HectagonTreasury");
+    const hectagonTreasury = await HectagonTreasury.deploy(hecta.address, "0", authority.address);
+    console.log("Treasury: " + hectagonTreasury.address);
+
+    // Deploy Staking
+    const HectagonStaking = await ethers.getContractFactory("HectagonStaking");
+    const staking = await HectagonStaking.deploy(
+        hecta.address,
+        sHECTA.address,
+        gHECTA.address,
+        epochLengthInBlocks,
         firstEpochNumber,
-        firstBlockNumber,
+        firstEpochBlock,
         authority.address
     );
+    console.log("Staking: " + staking.address);
 
+    // Deploy distributor
     const Distributor = await ethers.getContractFactory("Distributor");
     const distributor = await Distributor.deploy(
-        olympusTreasury.address,
-        ohm.address,
+        hectagonTreasury.address,
+        hecta.address,
         staking.address,
         authority.address
     );
+    console.log("Distributor: " + distributor.address);
 
-    // Initialize sohm
-    await sOHM.setIndex("7675210820");
-    await sOHM.setgOHM(gOHM.address);
-    await sOHM.initialize(staking.address, olympusTreasury.address);
 
+    // Deploy busd bond
+    const BUSDBond = await ethers.getContractFactory("HectagonV1BondDepository");
+    const busdBond = await BUSDBond.deploy(
+        hecta.address,
+        busd.address,
+        hectagonTreasury.address,
+        MockDAO.address,
+        zeroAddress,
+        staking.address,
+        authority.address
+    )
+    console.log("BUSDBond: " + busdBond.address);
+
+
+    // Initial Bond Term
+    await busdBond.initializeBondTerms(
+        busdBondBCV,
+        bondVestingLength,
+        minBondPrice,
+        maxBondPayout,
+        bondFee,
+        maxBondDebt,
+        intialBondDebt
+    )
+    console.log("Busd bond initialize")
+
+    // Console.log("Initialize Treasury")
+    await hectagonTreasury.initialize();
+
+    // Add Busd Bond 
+    await hectagonTreasury.queueTimelock("2", busd.address, zeroAddress);
+    await hectagonTreasury.queueTimelock("0", busdBond.address, zeroAddress);
+
+
+    await sHECTA.setIndex(initialIndex);
+    await sHECTA.setgHECTA(gHECTA.address);
+    await sHECTA.initialize(staking.address, hectagonTreasury.address);
+
+
+    // Add staking contract as distributor recipient
+    await distributor.addRecipient(staking.address, initialRewardRate);
+    console.log("Add staking contract as distributor recipient...");
+
+    // queue and toggle reward manager
+    await hectagonTreasury.queueTimelock("8", distributor.address, zeroAddress);
+
+
+    // queue and execute deployer reserve depositor
+    await hectagonTreasury.queueTimelock("0", deployer.address, zeroAddress);
+
+
+    // queue and execute liquidity depositor
+    await hectagonTreasury.queueTimelock("4", deployer.address, zeroAddress);
+    console.log("queue and execute liquidity depositor: Done");
+
+
+    // Approve the treasury to spend BUSD
+    await busd.approve(hectagonTreasury.address, largeApproval);
+    // Approve busd bonds to spend deployer's BUSD
+    await busd.approve(busd.address, largeApproval);
+    // Approve staking and staking helper contact to spend deployer's HECTA
+    await hecta.approve(staking.address, largeApproval);
+    console.log("Busd, hecta approve");
+
+
+    // Authority set treasury as vault
+    await authority.pushVault(hectagonTreasury.address, true);
+
+
+    // Set distributor for staking
     await staking.setDistributor(distributor.address);
 
-    await olympusTreasury.execute("0");
-    await olympusTreasury.execute("1");
-    await olympusTreasury.execute("2");
-    await olympusTreasury.execute("3");
-    await olympusTreasury.execute("4");
 
-    console.log("Olympus Authority: ", authority.address);
-    console.log("OHM: " + ohm.address);
-    console.log("sOhm: " + sOHM.address);
-    console.log("gOHM: " + gOHM.address);
-    console.log("Olympus Treasury: " + olympusTreasury.address);
-    console.log("Staking Contract: " + staking.address);
-    console.log("Distributor: " + distributor.address);
-    console.log("Migrator: " + migrator.address);
+    // Deploy redeem helper
+    const RedeemHelper = await ethers.getContractFactory("RedeemHelper");
+    const redeemHelper = await RedeemHelper.deploy(authority.address);
+    console.log("RedeemHelper: " + redeemHelper.address);
+
+    // Add busd bond redeem helper
+    await redeemHelper.addBondContract(busdBond.address);
+    console.log("redeem helper add busd bond");
+
+
+    await hectagonTreasury.execute("0");
+    await hectagonTreasury.execute("1");
+    await hectagonTreasury.execute("2");
+    await hectagonTreasury.execute("3");
+
+    // Treasury deposit
+    await hectagonTreasury.deposit(
+        "10000000000000000000000000",
+        busd.address,
+        "9900000000000000"
+    );
+    console.log("Treasury deposit")
+
+
+    // Staking stake
+    await staking.stake(deployer.address, "100000000000", true, true);
+    console.log("Staking stake")
+
+
+    const HectagonBondDepository = await ethers.getContractFactory("HectagonBondDepository");
+
+    const hectagonBondDepository = await HectagonBondDepository.deploy(
+        hecta.address,
+        hectagonTreasury.address,
+        authority.address
+    )
+    console.log("HectagonBondDepository: " + hectagonBondDepository.address);
+
+
+    // Deploy Bond Teller
+    const BondTeller = await ethers.getContractFactory("BondTeller");
+    const bondTeller = await BondTeller.deploy(
+        hectagonBondDepository.address,
+        staking.address,
+        hectagonTreasury.address,
+        hecta.address,
+        sHECTA.address,
+        authority.address
+    )
+    console.log("BondTeller: " + bondTeller.address);
+
+
+    // Execute tresury bond teller
+    await hectagonTreasury.queueTimelock("8", bondTeller.address, hetagonBondingCalculator.address);
+    await hectagonTreasury.execute("4");
+    console.log("Treasury execute bond teller");
+
+
+    // Set teller for bond depository
+    await hectagonBondDepository.setTeller(bondTeller.address);
+    console.log("Depository set teller");
+
+
+    console.log("Deploy successfully");
+
 }
 
 main()

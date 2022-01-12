@@ -5,19 +5,19 @@ import "./libraries/SafeMath.sol";
 import "./libraries/SafeERC20.sol";
 
 import "./interfaces/IERC20.sol";
-import "./interfaces/IsOHM.sol";
-import "./interfaces/IgOHM.sol";
+import "./interfaces/IsHECTA.sol";
+import "./interfaces/IgHECTA.sol";
 import "./interfaces/IDistributor.sol";
 
-import "./types/OlympusAccessControlled.sol";
+import "./types/HectagonAccessControlled.sol";
 
-contract OlympusStaking is OlympusAccessControlled {
+contract HectagonStaking is HectagonAccessControlled {
     /* ========== DEPENDENCIES ========== */
 
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
-    using SafeERC20 for IsOHM;
-    using SafeERC20 for IgOHM;
+    using SafeERC20 for IsHECTA;
+    using SafeERC20 for IgHECTA;
 
     /* ========== EVENTS ========== */
 
@@ -42,9 +42,9 @@ contract OlympusStaking is OlympusAccessControlled {
 
     /* ========== STATE VARIABLES ========== */
 
-    IERC20 public immutable OHM;
-    IsOHM public immutable sOHM;
-    IgOHM public immutable gOHM;
+    IERC20 public immutable HECTA;
+    IsHECTA public immutable sHECTA;
+    IgHECTA public immutable gHECTA;
 
     Epoch public epoch;
 
@@ -57,20 +57,20 @@ contract OlympusStaking is OlympusAccessControlled {
     /* ========== CONSTRUCTOR ========== */
 
     constructor(
-        address _ohm,
-        address _sOHM,
-        address _gOHM,
+        address _hecta,
+        address _sHECTA,
+        address _gHECTA,
         uint256 _epochLength,
         uint256 _firstEpochNumber,
         uint256 _firstEpochTime,
         address _authority
-    ) OlympusAccessControlled(IOlympusAuthority(_authority)) {
-        require(_ohm != address(0), "Zero address: OHM");
-        OHM = IERC20(_ohm);
-        require(_sOHM != address(0), "Zero address: sOHM");
-        sOHM = IsOHM(_sOHM);
-        require(_gOHM != address(0), "Zero address: gOHM");
-        gOHM = IgOHM(_gOHM);
+    ) HectagonAccessControlled(IHectagonAuthority(_authority)) {
+        require(_hecta != address(0), "Zero address: HECTA");
+        HECTA = IERC20(_hecta);
+        require(_sHECTA != address(0), "Zero address: sHECTA");
+        sHECTA = IsHECTA(_sHECTA);
+        require(_gHECTA != address(0), "Zero address: gHECTA");
+        gHECTA = IgHECTA(_gHECTA);
 
         epoch = Epoch({length: _epochLength, number: _firstEpochNumber, end: _firstEpochTime, distribute: 0});
     }
@@ -78,7 +78,7 @@ contract OlympusStaking is OlympusAccessControlled {
     /* ========== MUTATIVE FUNCTIONS ========== */
 
     /**
-     * @notice stake OHM to enter warmup
+     * @notice stake HECTA to enter warmup
      * @param _to address
      * @param _amount uint
      * @param _claim bool
@@ -91,7 +91,7 @@ contract OlympusStaking is OlympusAccessControlled {
         bool _rebasing,
         bool _claim
     ) external returns (uint256) {
-        OHM.safeTransferFrom(msg.sender, address(this), _amount);
+        HECTA.safeTransferFrom(msg.sender, address(this), _amount);
         _amount = _amount.add(rebase()); // add bounty if rebase occurred
         if (_claim && warmupPeriod == 0) {
             return _send(_to, _amount, _rebasing);
@@ -103,12 +103,12 @@ contract OlympusStaking is OlympusAccessControlled {
 
             warmupInfo[_to] = Claim({
                 deposit: info.deposit.add(_amount),
-                gons: info.gons.add(sOHM.gonsForBalance(_amount)),
+                gons: info.gons.add(sHECTA.gonsForBalance(_amount)),
                 expiry: epoch.number.add(warmupPeriod),
                 lock: info.lock
             });
 
-            gonsInWarmup = gonsInWarmup.add(sOHM.gonsForBalance(_amount));
+            gonsInWarmup = gonsInWarmup.add(sHECTA.gonsForBalance(_amount));
 
             return _amount;
         }
@@ -132,13 +132,13 @@ contract OlympusStaking is OlympusAccessControlled {
 
             gonsInWarmup = gonsInWarmup.sub(info.gons);
 
-            return _send(_to, sOHM.balanceForGons(info.gons), _rebasing);
+            return _send(_to, sHECTA.balanceForGons(info.gons), _rebasing);
         }
         return 0;
     }
 
     /**
-     * @notice forfeit stake and retrieve OHM
+     * @notice forfeit stake and retrieve HECTA
      * @return uint
      */
     function forfeit() external returns (uint256) {
@@ -147,7 +147,7 @@ contract OlympusStaking is OlympusAccessControlled {
 
         gonsInWarmup = gonsInWarmup.sub(info.gons);
 
-        OHM.safeTransfer(msg.sender, info.deposit);
+        HECTA.safeTransfer(msg.sender, info.deposit);
 
         return info.deposit;
     }
@@ -160,7 +160,7 @@ contract OlympusStaking is OlympusAccessControlled {
     }
 
     /**
-     * @notice redeem sOHM for OHMs
+     * @notice redeem sHECTA for HECTAs
      * @param _to address
      * @param _amount uint
      * @param _trigger bool
@@ -179,39 +179,39 @@ contract OlympusStaking is OlympusAccessControlled {
             bounty = rebase();
         }
         if (_rebasing) {
-            sOHM.safeTransferFrom(msg.sender, address(this), _amount);
+            sHECTA.safeTransferFrom(msg.sender, address(this), _amount);
             amount_ = amount_.add(bounty);
         } else {
-            gOHM.burn(msg.sender, _amount); // amount was given in gOHM terms
-            amount_ = gOHM.balanceFrom(amount_).add(bounty); // convert amount to OHM terms & add bounty
+            gHECTA.burn(msg.sender, _amount); // amount was given in gHECTA terms
+            amount_ = gHECTA.balanceFrom(amount_).add(bounty); // convert amount to HECTA terms & add bounty
         }
 
-        require(amount_ <= OHM.balanceOf(address(this)), "Insufficient OHM balance in contract");
-        OHM.safeTransfer(_to, amount_);
+        require(amount_ <= HECTA.balanceOf(address(this)), "Insufficient HECTA balance in contract");
+        HECTA.safeTransfer(_to, amount_);
     }
 
     /**
-     * @notice convert _amount sOHM into gBalance_ gOHM
+     * @notice convert _amount sHECTA into gBalance_ gHECTA
      * @param _to address
      * @param _amount uint
      * @return gBalance_ uint
      */
     function wrap(address _to, uint256 _amount) external returns (uint256 gBalance_) {
-        sOHM.safeTransferFrom(msg.sender, address(this), _amount);
-        gBalance_ = gOHM.balanceTo(_amount);
-        gOHM.mint(_to, gBalance_);
+        sHECTA.safeTransferFrom(msg.sender, address(this), _amount);
+        gBalance_ = gHECTA.balanceTo(_amount);
+        gHECTA.mint(_to, gBalance_);
     }
 
     /**
-     * @notice convert _amount gOHM into sBalance_ sOHM
+     * @notice convert _amount gHECTA into sBalance_ sHECTA
      * @param _to address
      * @param _amount uint
      * @return sBalance_ uint
      */
     function unwrap(address _to, uint256 _amount) external returns (uint256 sBalance_) {
-        gOHM.burn(msg.sender, _amount);
-        sBalance_ = gOHM.balanceFrom(_amount);
-        sOHM.safeTransfer(_to, sBalance_);
+        gHECTA.burn(msg.sender, _amount);
+        sBalance_ = gHECTA.balanceFrom(_amount);
+        sHECTA.safeTransfer(_to, sBalance_);
     }
 
     /**
@@ -221,17 +221,17 @@ contract OlympusStaking is OlympusAccessControlled {
     function rebase() public returns (uint256) {
         uint256 bounty;
         if (epoch.end <= block.timestamp) {
-            sOHM.rebase(epoch.distribute, epoch.number);
+            sHECTA.rebase(epoch.distribute, epoch.number);
 
             epoch.end = epoch.end.add(epoch.length);
             epoch.number++;
 
             if (address(distributor) != address(0)) {
                 distributor.distribute();
-                bounty = distributor.retrieveBounty(); // Will mint ohm for this contract if there exists a bounty
+                bounty = distributor.retrieveBounty(); // Will mint HECTA for this contract if there exists a bounty
             }
-            uint256 balance = OHM.balanceOf(address(this));
-            uint256 staked = sOHM.circulatingSupply();
+            uint256 balance = HECTA.balanceOf(address(this));
+            uint256 staked = sHECTA.circulatingSupply();
             if (balance <= staked.add(bounty)) {
                 epoch.distribute = 0;
             } else {
@@ -244,7 +244,7 @@ contract OlympusStaking is OlympusAccessControlled {
     /* ========== INTERNAL FUNCTIONS ========== */
 
     /**
-     * @notice send staker their amount as sOHM or gOHM
+     * @notice send staker their amount as sHECTA or gHECTA
      * @param _to address
      * @param _amount uint
      * @param _rebasing bool
@@ -255,29 +255,29 @@ contract OlympusStaking is OlympusAccessControlled {
         bool _rebasing
     ) internal returns (uint256) {
         if (_rebasing) {
-            sOHM.safeTransfer(_to, _amount); // send as sOHM (equal unit as OHM)
+            sHECTA.safeTransfer(_to, _amount); // send as sHECTA (equal unit as HECTA)
             return _amount;
         } else {
-            gOHM.mint(_to, gOHM.balanceTo(_amount)); // send as gOHM (convert units from OHM)
-            return gOHM.balanceTo(_amount);
+            gHECTA.mint(_to, gHECTA.balanceTo(_amount)); // send as gHECTA (convert units from HECTA)
+            return gHECTA.balanceTo(_amount);
         }
     }
 
     /* ========== VIEW FUNCTIONS ========== */
 
     /**
-     * @notice returns the sOHM index, which tracks rebase growth
+     * @notice returns the sHECTA index, which tracks rebase growth
      * @return uint
      */
     function index() public view returns (uint256) {
-        return sOHM.index();
+        return sHECTA.index();
     }
 
     /**
      * @notice total supply in warmup
      */
     function supplyInWarmup() public view returns (uint256) {
-        return sOHM.balanceForGons(gonsInWarmup);
+        return sHECTA.balanceForGons(gonsInWarmup);
     }
 
     /**

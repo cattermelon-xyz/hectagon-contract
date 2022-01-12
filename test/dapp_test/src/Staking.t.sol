@@ -81,7 +81,6 @@ contract StakingTest is DSTest {
         treasury.enable(OlympusTreasury.STATUS.RESERVEDEPOSITOR, address(this), address(0)); // Allow this contract to deposit token into treeasury
 
         sohm.initialize(address(staking), address(treasury));
-        gohm.migrate(address(staking), address(sohm));
 
         // Give the treasury permissions to mint
         authority.pushVault(address(treasury), true);
