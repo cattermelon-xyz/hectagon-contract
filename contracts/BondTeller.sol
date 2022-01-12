@@ -8,17 +8,17 @@ import "./interfaces/IERC20.sol";
 import "./interfaces/ITreasury.sol";
 import "./interfaces/IStaking.sol";
 import "./interfaces/IOwnable.sol";
-import "./interfaces/IsOHM.sol";
+import "./interfaces/IsHECTA.sol";
 import "./interfaces/ITeller.sol";
 
-import "./types/OlympusAccessControlled.sol";
+import "./types/HectagonAccessControlled.sol";
 
-contract BondTeller is ITeller, OlympusAccessControlled {
+contract BondTeller is ITeller, HectagonAccessControlled {
     /* ========== DEPENDENCIES ========== */
 
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
-    using SafeERC20 for IsOHM;
+    using SafeERC20 for IsHECTA;
 
     /* ========== EVENTS =========== */
 
@@ -38,7 +38,7 @@ contract BondTeller is ITeller, OlympusAccessControlled {
     struct Bond {
         address principal; // token used to pay for bond
         uint256 principalPaid; // amount of principal token paid for bond
-        uint256 payout; // sOHM remaining to be paid. agnostic balance
+        uint256 payout; // sHECTA remaining to be paid. agnostic balance
         uint256 vested; // Block when bond is vested
         uint256 created; // time bond was created
         uint256 redeemed; // time bond was redeemed
@@ -49,8 +49,8 @@ contract BondTeller is ITeller, OlympusAccessControlled {
     address internal immutable depository; // contract where users deposit bonds
     IStaking internal immutable staking; // contract to stake payout
     ITreasury internal immutable treasury;
-    IERC20 internal immutable OHM;
-    IsOHM internal immutable sOHM; // payment token
+    IERC20 internal immutable HECTA;
+    IsHECTA internal immutable sHECTA; // payment token
 
     mapping(address => Bond[]) public bonderInfo; // user data
     mapping(address => uint256[]) public indexesFor; // user bond indexes
@@ -64,20 +64,20 @@ contract BondTeller is ITeller, OlympusAccessControlled {
         address _depository,
         address _staking,
         address _treasury,
-        address _ohm,
-        address _sOHM,
+        address _hecta,
+        address _sHECTA,
         address _authority
-    ) OlympusAccessControlled(IOlympusAuthority(_authority)) {
+    ) HectagonAccessControlled(IHectagonAuthority(_authority)) {
         require(_depository != address(0), "Zero address: Depository");
         depository = _depository;
         require(_staking != address(0), "Zero address: Staking");
         staking = IStaking(_staking);
         require(_treasury != address(0), "Zero address: Treasury");
         treasury = ITreasury(_treasury);
-        require(_ohm != address(0), "Zero address: OHM");
-        OHM = IERC20(_ohm);
-        require(_sOHM != address(0), "Zero address: sOHM");
-        sOHM = IsOHM(_sOHM);
+        require(_hecta != address(0), "Zero address: HECTA");
+        HECTA = IERC20(_hecta);
+        require(_sHECTA != address(0), "Zero address: sHECTA");
+        sHECTA = IsHECTA(_sHECTA);
     }
 
     /* ========== DEPOSITORY FUNCTIONS ========== */
@@ -103,7 +103,7 @@ contract BondTeller is ITeller, OlympusAccessControlled {
         uint256 reward = _payout.mul(feReward).div(10_000);
         treasury.mint(address(this), _payout.add(reward));
 
-        OHM.approve(address(staking), _payout);
+        HECTA.approve(address(staking), _payout);
         staking.stake(address(this), _payout, true, true);
 
         FERs[_feo] = FERs[_feo].add(reward); // front end operator reward
@@ -115,7 +115,7 @@ contract BondTeller is ITeller, OlympusAccessControlled {
             Bond({
                 principal: _principal,
                 principalPaid: _principalPaid,
-                payout: sOHM.toG(_payout),
+                payout: sHECTA.toG(_payout),
                 vested: _expires,
                 created: block.timestamp,
                 redeemed: 0
@@ -153,7 +153,7 @@ contract BondTeller is ITeller, OlympusAccessControlled {
             }
         }
 
-        dues = sOHM.fromG(dues);
+        dues = sHECTA.fromG(dues);
 
         emit Redeemed(_bonder, dues);
         pay(_bonder, dues);
@@ -164,7 +164,7 @@ contract BondTeller is ITeller, OlympusAccessControlled {
     function getReward() external override {
         uint256 reward = FERs[msg.sender];
         FERs[msg.sender] = 0;
-        OHM.safeTransfer(msg.sender, reward);
+        HECTA.safeTransfer(msg.sender, reward);
     }
 
     /* ========== OWNABLE FUNCTIONS ========== */
@@ -181,7 +181,7 @@ contract BondTeller is ITeller, OlympusAccessControlled {
      *  @param _amount uint256
      */
     function pay(address _bonder, uint256 _amount) internal {
-        sOHM.safeTransfer(_bonder, _amount);
+        sHECTA.safeTransfer(_bonder, _amount);
     }
 
     /* ========== VIEW FUNCTIONS ========== */
@@ -203,7 +203,7 @@ contract BondTeller is ITeller, OlympusAccessControlled {
     // PAYOUT
 
     /**
-     * @notice calculate amount of OHM available for claim for single bond
+     * @notice calculate amount of HECTA available for claim for single bond
      * @param _bonder address
      * @param _index uint256
      * @return uint256
@@ -216,7 +216,7 @@ contract BondTeller is ITeller, OlympusAccessControlled {
     }
 
     /**
-     * @notice calculate amount of OHM available for claim for array of bonds
+     * @notice calculate amount of HECTA available for claim for array of bonds
      * @param _bonder address
      * @param _indexes uint256[]
      * @return pending_ uint256
@@ -225,7 +225,7 @@ contract BondTeller is ITeller, OlympusAccessControlled {
         for (uint256 i = 0; i < _indexes.length; i++) {
             pending_ = pending_.add(pendingFor(_bonder, i));
         }
-        pending_ = sOHM.fromG(pending_);
+        pending_ = sHECTA.fromG(pending_);
     }
 
     /**
@@ -238,7 +238,7 @@ contract BondTeller is ITeller, OlympusAccessControlled {
         for (uint256 i = 0; i < info.length; i++) {
             pending_ = pending_.add(pendingFor(_bonder, i));
         }
-        pending_ = sOHM.fromG(pending_);
+        pending_ = sHECTA.fromG(pending_);
     }
 
     // VESTING

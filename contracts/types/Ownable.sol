@@ -3,6 +3,9 @@ pragma solidity >=0.7.5;
 
 import "../interfaces/IOwnable.sol";
 
+/*
+* push & pull model
+*/
 abstract contract Ownable is IOwnable {
 
     address internal _owner;
