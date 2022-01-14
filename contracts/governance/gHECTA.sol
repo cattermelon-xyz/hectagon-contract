@@ -39,6 +39,7 @@ contract gHECTA is IgHECTA, ERC20 {
 
     IsHECTA public sHECTA;
     address public approved; 
+    bool public migrated;
 
     mapping(address => mapping(uint256 => Checkpoint)) public checkpoints;
     mapping(address => uint256) public numCheckpoints;
@@ -51,6 +52,23 @@ contract gHECTA is IgHECTA, ERC20 {
     {
         require(_sHECTA != address(0), "Zero address: sHECTA");
         sHECTA = IsHECTA(_sHECTA);
+        approved = msg.sender;
+    }
+
+    /* ========== MUTATIVE FUNCTIONS ========== */
+
+    /**
+     * @notice transfer mint rights from deployer to staking
+     * @notice can only be done once, at the time of contract migration
+     * @param _staking address
+     */
+    function setStaking(address _staking) external onlyApproved {
+        require(!migrated, "Migrated");
+        migrated = true;
+
+        require(_staking != approved, "Invalid argument");
+        require(_staking != address(0), "Zero address found");
+        approved = _staking;
     }
 
     /**

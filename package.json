@@ -55,16 +55,15 @@
     "coverage": "HARDHAT_DEPLOY_FIXTURE=true hardhat coverage",
     "typechain": "TS_NODE_TRANSPILE_ONLY=true hardhat typechain",
     "fork": "hardhat node",
-    "deploy:mainnet": "hardhat --network mainnet deploy",
     "deploy:rinkeby": "hardhat --network rinkeby deploy",
     "deploy:ropsten": "hardhat --network ropsten deploy",
     "deploy:hardhat": "hardhat --network hardhat deploy",
     "deploy:testnet": "hardhat --network testnet deploy",
-    "sourcify:mainnet": "hardhat --network mainnet sourcify",
+    "deploy:binance": "hardhat --network binance deploy",
     "sourcify:rinkeby": "hardhat --network rinkeby sourcify",
-    "etherscan:mainnet": "hardhat --network mainnet etherscan-verify",
     "etherscan:rinkeby": "hardhat --network rinkeby etherscan-verify",
-    "etherscan:testnet": "hardhat --network testnet etherscan-verify"
+    "etherscan:testnet": "hardhat --network testnet etherscan-verify",
+    "etherscan:binance": "hardhat --network binance etherscan-verify"
   },
   "repository": {
     "type": "git",

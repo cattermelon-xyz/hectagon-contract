@@ -7,7 +7,7 @@ contract THectagonERC20 is PreHectagonERC20 {
   /**
   * Pre-mint 50M token
    */
-  constructor() ERC20("Team Hectagon","tHECTA",9){
+  constructor() ERC20("Team Hectagon", "tHECTA", 9) {
     allowMinting = true;
     uint256 initialSupply_ = 50000000 * 1e9;
     _mint( owner(), initialSupply_ );
