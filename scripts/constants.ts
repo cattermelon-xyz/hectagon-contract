@@ -24,7 +24,7 @@ export const LARGE_APPROVAL = "100000000000000000000000000000000";
 
 export const EPOCH_LENGTH_IN_SECONDS = "3600";
 export const FIRST_EPOCH_NUMBER = "0";
-export const FIRST_EPOCH_TIME = "1642142672";
+export const FIRST_EPOCH_TIME = "1642412125";
 
 // init system
 export const INITIAL_REWARD_RATE = "3000";
