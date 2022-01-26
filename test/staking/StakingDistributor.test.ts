@@ -30,7 +30,7 @@ describe("Distributor", () => {
         [owner, staking, governor, guardian, other] = await ethers.getSigners();
         treasuryFake = await smock.fake<ITreasury>("ITreasury");
         hectaFake = await smock.fake<IHECTA>("IHECTA");
-        authority = await (new HectagonAuthority__factory(owner)).deploy(
+        authority = await new HectagonAuthority__factory(owner).deploy(
             governor.address,
             guardian.address,
             owner.address,
@@ -341,10 +341,10 @@ describe("Distributor", () => {
 
             it("must be done by either governor or guardian", async () => {
                 await distributor.connect(governor).addRecipient(staking.address, 2975);
-                await expect(
-                    distributor.connect(other).removeRecipient(0)
-                ).to.be.revertedWith("Caller is not governor or guardian");
+                await expect(distributor.connect(other).removeRecipient(0)).to.be.revertedWith(
+                    "Caller is not governor or guardian"
+                );
             });
         });
-      });
+    });
 });
