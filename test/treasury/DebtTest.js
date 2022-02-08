@@ -94,7 +94,7 @@ describe("Treasury", async () => {
         ); // TODO
         hecta = await hectaFactory.deploy(auth.address);
         sHecta = await sHectaFactory.deploy();
-        gHecta = await gHectaFactory.deploy(sHecta.address, sHecta.address); // Call migrate immediately
+        gHecta = await gHectaFactory.deploy(sHecta.address);
         staking = await stakingFactory.deploy(
             hecta.address,
             sHecta.address,
@@ -115,7 +115,6 @@ describe("Treasury", async () => {
         // Setup for each component
 
         // Needed for treasury deposit
-        //await gHecta.migrate(staking.address, sHecta.address);
         await dai.mint(deployer.address, initialMint);
         await dai.approve(treasury.address, LARGE_APPROVAL);
 
@@ -125,10 +124,10 @@ describe("Treasury", async () => {
         // To get past HECTA contract guards
         await auth.pushVault(treasury.address, true);
 
-        // Initialization for sHecta contract.
+        // Initialization for sHECTA contract.
         // Set index to 10
         await sHecta.setIndex("10000000000");
-        await sHecta.setgHecta(gHecta.address);
+        await sHecta.setgHECTA(gHecta.address);
         await sHecta.initialize(staking.address, treasury.address);
 
         // Set distributor staking contract
@@ -144,7 +143,7 @@ describe("Treasury", async () => {
         await treasury.enable("4", deployer.address, ZERO_ADDRESS);
         // toggle DAI as reserve token
         await treasury.enable("2", dai.address, ZERO_ADDRESS);
-        // set sHecta
+        // set sHECTA
         await treasury.enable("9", sHecta.address, ZERO_ADDRESS);
 
         // Deposit 10,000 DAI to treasury, 1,000 HECTA gets minted to deployer with 9000 as excess reserves (ready to be minted)
@@ -155,12 +154,12 @@ describe("Treasury", async () => {
         // Add staking as recipient of distributor with a test reward rate
         await distributor.addRecipient(staking.address, initialRewardRate);
 
-        // Get sHecta in deployer wallet
-        const sHectaAmount = "1000000000000";
-        await hecta.approve(staking.address, sHectaAmount);
-        await staking.stake(deployer.address, sHectaAmount, true, true);
+        // Get sHECTA in deployer wallet
+        const shectaAmount = "1000000000000";
+        await hecta.approve(staking.address, shectaAmount);
+        await staking.stake(deployer.address, shectaAmount, true, true);
 
-        // Transfer 10 sHecta to alice for testing
+        // Transfer 10 sHECTA to alice for testing
         await sHecta.transfer(alice.address, debtLimit);
     });
 
@@ -226,7 +225,7 @@ describe("Treasury", async () => {
         await treasury.setDebtLimit(alice.address, debtLimit * 2);
         await expect(
             treasury.connect(alice).incurDebt(String(staked + 1), hecta.address)
-        ).to.be.revertedWith("sHecta: insufficient balance");
+        ).to.be.revertedWith("sHECTA: insufficient balance");
     });
 
     it("should not allow alice to borrow more than her debt limit", async () => {

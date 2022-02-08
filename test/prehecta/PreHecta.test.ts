@@ -44,11 +44,10 @@ describe("PHecta and THecta is PreHectagonERC20 so both of them", function() {
   })
 
   it("should correctly construct", async function(){
-    expect(await phecta.name()).to.equal("pHectagon");
-    expect(await thecta.name()).to.equal("tHectagon");
-    expect(await phecta.symbol()).to.equal("PHECTA");
-    expect(await thecta.symbol()).to.equal("THECTA");
-    expect(hectaDecimal).to.equal(9);
+    expect(await phecta.name()).to.equal("Private Hectagon");
+    expect(await thecta.name()).to.equal("Team Hectagon");
+    expect(await phecta.symbol()).to.equal("pHECTA");
+    expect(await thecta.symbol()).to.equal("tHECTA");
     expect(pHectaDecimal).to.equal(9);
     expect(tHectaDecimal).to.equal(9);
   })
@@ -71,7 +70,7 @@ describe("PHecta and THecta is PreHectagonERC20 so both of them", function() {
     expect(initialSupplyTHecta).to.equal(totalSupply);
   })
 
-  it("should let Owner mint new token if allowMinting=true", async function(){
+  it("should let Owner mint new token if allowMinting=true", async function() {
     /**
      * testing on phecta
      */
