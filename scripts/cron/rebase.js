@@ -10,14 +10,14 @@ const stakingAddress = process.env.STAKING_ADDRESS;
 async function retryer() {
     let operation = retry.operation({retries: 10, factor: 1, minTimeout: 10000}); // retry 10 times each 10 seconds
     const [owner] = await ethers.getSigners();
-    console.log("Owner:", owner.address);
+    console.log("[Cron][Rebase] Owner:", owner.address);
     const managedSigner = new NonceManager(owner);
-    const contract = await ethers.getContractAt("HectagonStaking", stakingAddress);
+    const contract = await ethers.getContractAt("[Cron][Rebase] HectagonStaking", stakingAddress);
     const contractWithSigner = contract.connect(managedSigner);
 
     return new Promise((resolve, reject) => {
         operation.attempt(async currentAttempt => {
-            console.log('currentAttempt #:', currentAttempt);
+            console.log('[Cron][Rebase] currentAttempt #:', currentAttempt);
             let err = false;
             let secondsToNextEpoch;
             try {
@@ -26,11 +26,11 @@ async function retryer() {
                 console.log(error);
                 secondsToNextEpoch = 0;
             }
-            console.log("secondsToNextEpoch", secondsToNextEpoch)
+            console.log("[Cron][Rebase] secondsToNextEpoch", secondsToNextEpoch);
             if(secondsToNextEpoch === 0 ) {
                 try {
                     const tx = await contractWithSigner.rebase();
-                    console.log("rebase tx", tx);
+                    console.log("[Cron][Rebase] rebase tx", tx);
                 } catch (error) {
                     console.log(error);
                     err = true;
@@ -46,11 +46,11 @@ async function retryer() {
 
 async function main() {
     if(!stakingAddress) {
-        throw Error("process.env.STAKING_ADDRESS is required")
+        throw Error("[Cron][Rebase] process.env.STAKING_ADDRESS is required")
     }
-    console.log('Start')
+    console.log('[Cron][Rebase] Start')
     await retryer()
-    console.log('End')
+    console.log('[Cron][Rebase] End')
 }
 
 // We recommend this pattern to be able to use async/await everywhere
