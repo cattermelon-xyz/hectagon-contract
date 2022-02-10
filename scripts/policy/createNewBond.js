@@ -1,11 +1,10 @@
 const { ethers } = require("hardhat");
-const { ZERO_ADDRESS} = require("../constants");
-
+const { ZERO_ADDRESS } = require("../constants");
 
 async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deployer: " + deployer.address);
-    
+
     const bondDepositoryAddress = "0xfBBB32190D7B612Ebb727Df661b6Dc887f902C72";
     const busdAddress = "0x3471157cE0C3f9d1272CA3510a7d00049bB3B0EA";
     const bondCalAddress = "0x985AC1159c29890868864e1dfe700D59E4d3365a";
@@ -18,19 +17,19 @@ async function main() {
     const hectagonBondDepositoryV2 = await HectagonBondDepositoryV2.attach(bondDepositoryAddress);
 
     let permission = await treasury.permissions("2", busdAddress);
-    if(!permission) {
+    if (!permission) {
         await treasury.enable("2", busdAddress, ZERO_ADDRESS);
         console.log("Add BUSD as reverse token on traesury");
     }
 
     permission = await treasury.permissions("5", hectabusdAddress);
 
-    if(!permission) {
+    if (!permission) {
         await treasury.enable("5", hectabusdAddress, bondCalAddress);
         console.log("Add HECTA-BUSD as liquidity token on traesury, ");
     }
 
-    const hectaPerUSD = (600000*1e18)/(50000*1e9); // dedcimal 9, BusdAmount / HectaAmount  
+    const hectaPerUSD = (600000 * 1e18) / (50000 * 1e9); // dedcimal 9, BusdAmount / HectaAmount
     await hectagonBondDepositoryV2.create(
         busdAddress,
         ["10000000000000000000000", `${hectaPerUSD}`, "10000"],
@@ -39,8 +38,8 @@ async function main() {
         ["8640", "86400"]
     );
 
-    const quoteTokenPrice = (2*600000*1e18) / Math.sqrt(600000*1e18*50000*1e9);
-    const marketPrice = Math.floor(hectaPerUSD/quoteTokenPrice);
+    const quoteTokenPrice = (2 * 600000 * 1e18) / Math.sqrt(600000 * 1e18 * 50000 * 1e9);
+    const marketPrice = Math.floor(hectaPerUSD / quoteTokenPrice);
     await hectagonBondDepositoryV2.create(
         hectabusdAddress,
         [`${10000 * 1e9}`, `${marketPrice}`, "10000"],

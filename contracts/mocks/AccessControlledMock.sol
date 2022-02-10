@@ -4,8 +4,7 @@ pragma solidity 0.7.5;
 import "../types/HectagonAccessControlled.sol";
 
 contract AccessControlledMock is HectagonAccessControlled {
-
-    constructor( address _auth ) HectagonAccessControlled(IHectagonAuthority(_auth)) {}
+    constructor(address _auth) HectagonAccessControlled(IHectagonAuthority(_auth)) {}
 
     bool public governorOnlyTest;
 
@@ -24,7 +23,7 @@ contract AccessControlledMock is HectagonAccessControlled {
         guardianOnlyTest = true;
         return guardianOnlyTest;
     }
-    
+
     function policyTest() external onlyPolicy returns (bool) {
         policyOnlyTest = true;
         return policyOnlyTest;

@@ -15,7 +15,7 @@ export const CONTRACTS: Record<string, string> = {
     redeemHelper: "RedeemHelper",
     BUSD: "BEP20Token",
     BUSDBond: "HectagonV1BondDepository",
-}; 
+};
 
 // Constructor Arguments
 export const TREASURY_TIMELOCK = 0;
@@ -29,7 +29,7 @@ export const FIRST_EPOCH_TIME = "1642412125";
 // init system
 export const INITIAL_REWARD_RATE = "3000";
 export const INITIAL_INDEX = "1000000000";
-// 
+//
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 export const BOUNTY_AMOUNT = "100000000";

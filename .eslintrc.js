@@ -17,7 +17,5 @@ module.exports = {
         "no-empty-function": "off",
         "@typescript-eslint/no-empty-function": "off",
         "@typescript-eslint/no-var-requires": "off",
-        "limit": 120, 
-        "ignore-pattern": "^import [^,]+ from |^export | implements"
     },
 };

@@ -1,9 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { CONTRACTS } from "../constants";
-import {
-    HectagonTreasury__factory,
-} from "../../types";
+import { HectagonTreasury__factory } from "../../types";
 import { waitFor } from "../txHelper";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {

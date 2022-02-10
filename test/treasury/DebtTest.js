@@ -1,9 +1,5 @@
-const { ethers, waffle, network } = require("hardhat");
+const { ethers, network } = require("hardhat");
 const { expect } = require("chai");
-//const { FakeContract, smock } = require("@defi-wonderland/smock");
-
-const { utils } = require("ethers");
-const { advanceBlock } = require("../utils/advancement");
 
 describe("Treasury", async () => {
     const LARGE_APPROVAL = "100000000000000000000000000000000";

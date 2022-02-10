@@ -40,7 +40,7 @@ describe("Distributor", () => {
 
     describe("constructor", () => {
         it("constructs correctly", async () => {
-            const distributor = await new Distributor__factory(owner).deploy(
+            await new Distributor__factory(owner).deploy(
                 treasuryFake.address,
                 hectaFake.address,
                 staking.address,

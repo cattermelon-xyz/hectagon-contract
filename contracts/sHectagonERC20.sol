@@ -275,9 +275,10 @@ contract sHectagon is IsHECTA, ERC20Permit {
     // Staking contract holds excess sHECTA
     function circulatingSupply() public view override returns (uint256) {
         return
-            _totalSupply.sub(balanceOf(stakingContract)).add(gHECTA.balanceFrom(IERC20(address(gHECTA)).totalSupply())).add(
-                IStaking(stakingContract).supplyInWarmup()
-            );
+            _totalSupply
+                .sub(balanceOf(stakingContract))
+                .add(gHECTA.balanceFrom(IERC20(address(gHECTA)).totalSupply()))
+                .add(IStaking(stakingContract).supplyInWarmup());
     }
 
     function index() public view override returns (uint256) {
