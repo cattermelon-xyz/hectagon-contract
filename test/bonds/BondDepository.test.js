@@ -159,12 +159,12 @@ describe("Bond Depository", async () => {
         );
         // close the first bond
         await depository.close(0);
-        [first] = await depository.liveMarkets();
+        const [first] = await depository.liveMarkets();
         expect(Number(first)).to.equal(1);
     });
 
     it("should include ID in live markets for quote token", async () => {
-        [id] = await depository.liveMarketsFor(dai.address);
+        const [id] = await depository.liveMarketsFor(dai.address);
         expect(Number(id)).to.equal(bid);
     });
 
@@ -204,7 +204,7 @@ describe("Bond Depository", async () => {
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice * 2, bob.address, carol.address);
-        let [change, lastAdjustment, timeToAdjusted, active] = await depository.adjustments(bid);
+        let [, , , active] = await depository.adjustments(bid);
         expect(Boolean(active)).to.equal(false);
     });
 
@@ -214,7 +214,7 @@ describe("Bond Depository", async () => {
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
-        let [change, lastAdjustment, timeToAdjusted, active] = await depository.adjustments(bid);
+        let [, , , active] = await depository.adjustments(bid);
         expect(Boolean(active)).to.equal(true);
     });
 
@@ -226,7 +226,7 @@ describe("Bond Depository", async () => {
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
         await network.provider.send("evm_increaseTime", [tuneInterval]);
-        let [change, lastAdjustment, timeToAdjusted, active] = await depository.adjustments(bid);
+        let [change] = await depository.adjustments(bid);
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
@@ -241,7 +241,7 @@ describe("Bond Depository", async () => {
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
-        let [change, lastAdjustment, timeToAdjusted, active] = await depository.adjustments(bid);
+        let [change] = await depository.adjustments(bid);
         await network.provider.send("evm_increaseTime", [tuneInterval / 2]);
         await depository
             .connect(bob)
@@ -256,12 +256,12 @@ describe("Bond Depository", async () => {
 
     it("adjustment should continue lowering over multiple deposits in same tune interval", async () => {
         await network.provider.send("evm_increaseTime", [tuneInterval]);
-        [, controlVariable, , ,] = await depository.terms(bid);
+        const [, controlVariable, , ,] = await depository.terms(bid);
         let amount = "10000000000000000000000"; // 10,000
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
-        let [change, lastAdjustment, timeToAdjusted, active] = await depository.adjustments(bid);
+        let [change] = await depository.adjustments(bid);
 
         await network.provider.send("evm_increaseTime", [tuneInterval / 2]);
         await depository
@@ -304,7 +304,7 @@ describe("Bond Depository", async () => {
 
     it("should redeem after vested", async () => {
         let amount = "10000000000000000000000"; // 10,000
-        let [expectedPayout, expiry, index] = await depository
+        let [expectedPayout] = await depository
             .connect(bob)
             .callStatic.deposit(bid, amount, initialPrice, bob.address, carol.address);
 
@@ -324,7 +324,7 @@ describe("Bond Depository", async () => {
         let daoBalance = await hecta.balanceOf(deployer.address);
         let refBalance = await hecta.balanceOf(carol.address);
         let amount = "10000000000000000000000"; // 10,000
-        let [payout, expiry, index] = await depository
+        let [payout] = await depository
             .connect(bob)
             .callStatic.deposit(bid, amount, initialPrice, bob.address, carol.address);
         await depository

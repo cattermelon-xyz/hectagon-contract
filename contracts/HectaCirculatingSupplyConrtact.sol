@@ -5,7 +5,7 @@ import "./interfaces/IERC20.sol";
 import "./libraries/SafeMath.sol";
 
 contract HectaCirculatingSupplyConrtact {
-    using SafeMath for uint;
+    using SafeMath for uint256;
 
     bool public isInitialized;
 
@@ -13,13 +13,13 @@ contract HectaCirculatingSupplyConrtact {
     address public owner;
     address[] public nonCirculatingHectaAddresses;
 
-    constructor() {        
+    constructor() {
         owner = msg.sender;
     }
 
-    function initialize( address _Hecta ) external returns ( bool ) {
-        require( msg.sender == owner, "caller is not owner" );
-        require( isInitialized == false );
+    function initialize(address _Hecta) external returns (bool) {
+        require(msg.sender == owner, "caller is not owner");
+        require(isInitialized == false);
 
         Hecta = _Hecta;
 
@@ -28,33 +28,33 @@ contract HectaCirculatingSupplyConrtact {
         return true;
     }
 
-    function HectaCirculatingSupply() external view returns ( uint ) {
-        uint _totalSupply = IERC20( Hecta ).totalSupply();
+    function HectaCirculatingSupply() external view returns (uint256) {
+        uint256 _totalSupply = IERC20(Hecta).totalSupply();
 
-        uint _circulatingSupply = _totalSupply.sub( getNonCirculatingHecta() );
+        uint256 _circulatingSupply = _totalSupply.sub(getNonCirculatingHecta());
 
         return _circulatingSupply;
     }
 
-    function getNonCirculatingHecta() public view returns ( uint ) {
-        uint _nonCirculatingHecta;
+    function getNonCirculatingHecta() public view returns (uint256) {
+        uint256 _nonCirculatingHecta;
 
-        for( uint i=0; i < nonCirculatingHectaAddresses.length; i = i.add( 1 ) ) {
-            _nonCirculatingHecta = _nonCirculatingHecta.add( IERC20( Hecta ).balanceOf( nonCirculatingHectaAddresses[i] ) );
+        for (uint256 i = 0; i < nonCirculatingHectaAddresses.length; i = i.add(1)) {
+            _nonCirculatingHecta = _nonCirculatingHecta.add(IERC20(Hecta).balanceOf(nonCirculatingHectaAddresses[i]));
         }
 
         return _nonCirculatingHecta;
     }
 
-    function setNonCirculatingHectaAddresses( address[] calldata _nonCirculatingAddresses ) external returns ( bool ) {
-        require( msg.sender == owner, "Sender is not owner" );
+    function setNonCirculatingHectaAddresses(address[] calldata _nonCirculatingAddresses) external returns (bool) {
+        require(msg.sender == owner, "Sender is not owner");
         nonCirculatingHectaAddresses = _nonCirculatingAddresses;
 
         return true;
     }
 
-    function transferOwnership( address _owner ) external returns ( bool ) {
-        require( msg.sender == owner, "Sender is not owner" );
+    function transferOwnership(address _owner) external returns (bool) {
+        require(msg.sender == owner, "Sender is not owner");
 
         owner = _owner;
 

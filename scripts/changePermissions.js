@@ -1,11 +1,9 @@
 const { ethers } = require("hardhat");
-const { CONTRACTS, ZERO_ADDRESS, LARGE_APPROVAL } = require("./constants");
-
 
 async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deployer: " + deployer.address);
-    
+
     const governorAddress = "";
     const guardianAddress = "";
     const policyAddress = "";
@@ -14,9 +12,9 @@ async function main() {
     const HectagonAuthority = await ethers.getContractFactory("HectagonAuthority");
     const authority = await HectagonAuthority.attach(authorityAddress);
 
-    await authority.pushGovernor(governorAddress, true);
     await authority.pushGuardian(guardianAddress, true);
     await authority.pushPolicy(policyAddress, true);
+    await authority.pushGovernor(governorAddress, true);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -91,7 +91,9 @@ describe("sHecta", () => {
 
             it("emits Transfer event", async () => {
                 await expect(
-                    sHecta.connect(initializer).initialize(stakingFake.address, treasuryFake.address)
+                    sHecta
+                        .connect(initializer)
+                        .initialize(stakingFake.address, treasuryFake.address)
                 )
                     .to.emit(sHecta, "Transfer")
                     .withArgs(ZERO_ADDRESS, stakingFake.address, TOTAL_GONS);
@@ -99,7 +101,9 @@ describe("sHecta", () => {
 
             it("emits LogStakingContractUpdated event", async () => {
                 await expect(
-                    sHecta.connect(initializer).initialize(stakingFake.address, treasuryFake.address)
+                    sHecta
+                        .connect(initializer)
+                        .initialize(stakingFake.address, treasuryFake.address)
                 )
                     .to.emit(sHecta, "LogStakingContractUpdated")
                     .withArgs(stakingFake.address);
@@ -110,7 +114,9 @@ describe("sHecta", () => {
                     .connect(initializer)
                     .initialize(stakingFake.address, treasuryFake.address);
                 await expect(
-                    sHecta.connect(initializer).initialize(stakingFake.address, treasuryFake.address)
+                    sHecta
+                        .connect(initializer)
+                        .initialize(stakingFake.address, treasuryFake.address)
                 ).to.be.reverted;
             });
         });

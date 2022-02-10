@@ -17,19 +17,24 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     await deploy(CONTRACTS.bondDepo, {
         from: deployer,
         args: [
-            authorityDeployment.address, 
+            authorityDeployment.address,
             hectaDeployment.address,
             gHectaDeployment.address,
             stakingDeployment.address,
-            treasuryDeployment.address
+            treasuryDeployment.address,
         ],
         log: true,
         skipIfAlreadyDeployed: true,
     });
-    
 };
 
 func.tags = [CONTRACTS.bondDepo, "bonding"];
-func.dependencies = [CONTRACTS.authority, CONTRACTS.hecta, CONTRACTS.gHecta, CONTRACTS.staking, CONTRACTS.treasury];
+func.dependencies = [
+    CONTRACTS.authority,
+    CONTRACTS.hecta,
+    CONTRACTS.gHecta,
+    CONTRACTS.staking,
+    CONTRACTS.treasury,
+];
 
 export default func;
