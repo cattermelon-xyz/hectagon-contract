@@ -2,7 +2,7 @@ export const CONTRACTS: Record<string, string> = {
     hecta: "HectagonERC20Token",
     sHecta: "sHectagon",
     gHecta: "gHECTA",
-    pHecta: "PHectagonERC20",
+    pHecta: "pHectagon",
     tHecta: "THectagonERC20",
     staking: "HectagonStaking",
     distributor: "Distributor",
@@ -13,8 +13,6 @@ export const CONTRACTS: Record<string, string> = {
     migrator: "HectagonTokenMigrator",
     circulatingSupply: "HectaCirculatingSupplyConrtact",
     redeemHelper: "RedeemHelper",
-    BUSD: "BEP20Token",
-    BUSDBond: "HectagonV1BondDepository",
 }; 
 
 // Constructor Arguments
@@ -24,7 +22,7 @@ export const LARGE_APPROVAL = "100000000000000000000000000000000";
 
 export const EPOCH_LENGTH_IN_SECONDS = "3600";
 export const FIRST_EPOCH_NUMBER = "0";
-export const FIRST_EPOCH_TIME = "1642412125";
+export const FIRST_EPOCH_TIME = "1644896415";
 
 // init system
 export const INITIAL_REWARD_RATE = "3000";

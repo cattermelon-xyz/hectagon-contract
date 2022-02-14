@@ -54,7 +54,7 @@ const config: HardhatUserConfig = {
              chainId: chainIds.hardhat,
         },
         // mainnet: getChainConfig("mainnet"),
-        // ropsten: getChainConfig("ropsten"),
+        ropsten: getChainConfig("ropsten"),
         rinkeby: getChainConfig("rinkeby"),
 		testnet: {
 			url: "https://data-seed-prebsc-1-s1.binance.org:8545",
