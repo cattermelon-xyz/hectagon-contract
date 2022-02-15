@@ -51,22 +51,22 @@ const config: HardhatUserConfig = {
             forking: {
                 url: `https://eth-mainnet.alchemyapi.io/v2/${alchemyApiKey}`,
             },
-             chainId: chainIds.hardhat,
+            chainId: chainIds.hardhat,
         },
         // mainnet: getChainConfig("mainnet"),
         ropsten: getChainConfig("ropsten"),
         rinkeby: getChainConfig("rinkeby"),
-		testnet: {
-			url: "https://data-seed-prebsc-1-s1.binance.org:8545",
-			chainId: 97,
-			accounts: [`${privateKey}`],
+        testnet: {
+            url: "https://data-seed-prebsc-1-s1.binance.org:8545",
+            chainId: 97,
+            accounts: [`${privateKey}`],
             gas: 2100000,
-		},
-		mainnet: {
-			url: "https://bsc-dataseed.binance.org/",
-			chainId: 56,
-			accounts: [`${privateKey}`]
-		},
+        },
+        mainnet: {
+            url: "https://bsc-dataseed.binance.org/",
+            chainId: 56,
+            accounts: [`${privateKey}`],
+        },
     },
     paths: {
         artifacts: "./artifacts",

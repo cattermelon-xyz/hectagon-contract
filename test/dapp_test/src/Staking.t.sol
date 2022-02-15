@@ -8,12 +8,12 @@ import "../../../contracts/libraries/SafeMath.sol";
 import "../../../contracts/libraries/FixedPoint.sol";
 import "../../../contracts/libraries/FullMath.sol";
 import "../../../contracts/Staking.sol";
-import "../../../contracts/OlympusERC20.sol";
-import "../../../contracts/sOlympusERC20.sol";
-import "../../../contracts/governance/gOHM.sol";
+import "../../../contracts/HectagonERC20.sol";
+import "../../../contracts/sHectagonERC20.sol";
+import "../../../contracts/governance/gHECTA.sol";
 import "../../../contracts/Treasury.sol";
 import "../../../contracts/StakingDistributor.sol";
-import "../../../contracts/OlympusAuthority.sol";
+import "../../../contracts/HectagonAuthority.sol";
 
 import "./util/Hevm.sol";
 import "./util/MockContract.sol";
@@ -23,14 +23,14 @@ contract StakingTest is DSTest {
     using SafeMath for uint256;
     using SafeMath for uint112;
 
-    OlympusStaking internal staking;
-    OlympusTreasury internal treasury;
-    OlympusAuthority internal authority;
+    HectagonStaking internal staking;
+    HectagonTreasury internal treasury;
+    HectagonAuthority internal authority;
     Distributor internal distributor;
 
-    OlympusERC20Token internal ohm;
-    sOlympus internal sohm;
-    gOHM internal gohm;
+    HectagonERC20Token internal hecta;
+    sHectagon internal shecta;
+    gHECTA internal ghecta;
 
     MockContract internal mockToken;
 
@@ -53,39 +53,40 @@ contract StakingTest is DSTest {
         mockToken.givenMethodReturnUint(abi.encodeWithSelector(ERC20.decimals.selector), 18);
         mockToken.givenMethodReturnBool(abi.encodeWithSelector(IERC20.transferFrom.selector), true);
 
-        authority = new OlympusAuthority(address(this), address(this), address(this), address(this));
+        authority = new HectagonAuthority(address(this), address(this), address(this), address(this));
 
-        ohm = new OlympusERC20Token(address(authority));
-        gohm = new gOHM(address(this), address(this));
-        sohm = new sOlympus();
-        sohm.setIndex(10);
-        sohm.setgOHM(address(gohm));
+        hecta = new HectagonERC20Token(address(authority));
+        ghecta = new gHECTA(address(this), address(this));
+        shecta = new sHectagon();
+        shecta.setIndex(10);
+        shecta.setgHECTA(address(ghecta));
 
-        treasury = new OlympusTreasury(address(ohm), 1, address(authority));
+        treasury = new HectagonTreasury(address(hecta), 1, address(authority));
 
-        staking = new OlympusStaking(
-            address(ohm),
-            address(sohm),
-            address(gohm),
+        staking = new HectagonStaking(
+            address(hecta),
+            address(shecta),
+            address(ghecta),
             EPOCH_LENGTH,
             START_TIME,
             NEXT_REBASE_TIME,
             address(authority)
         );
 
-        distributor = new Distributor(address(treasury), address(ohm), address(staking), address(authority));
+        distributor = new Distributor(address(treasury), address(hecta), address(staking), address(authority));
         distributor.setBounty(BOUNTY);
         staking.setDistributor(address(distributor));
-        treasury.enable(OlympusTreasury.STATUS.REWARDMANAGER, address(distributor), address(0)); // Allows distributor to mint ohm.
-        treasury.enable(OlympusTreasury.STATUS.RESERVETOKEN, address(mockToken), address(0)); // Allow mock token to be deposited into treasury
-        treasury.enable(OlympusTreasury.STATUS.RESERVEDEPOSITOR, address(this), address(0)); // Allow this contract to deposit token into treeasury
+        treasury.enable(HectagonTreasury.STATUS.REWARDMANAGER, address(distributor), address(0)); // Allows distributor to mint hecta.
+        treasury.enable(HectagonTreasury.STATUS.RESERVETOKEN, address(mockToken), address(0)); // Allow mock token to be deposited into treasury
+        treasury.enable(HectagonTreasury.STATUS.RESERVEDEPOSITOR, address(this), address(0)); // Allow this contract to deposit token into treeasury
 
-        sohm.initialize(address(staking), address(treasury));
+        shecta.initialize(address(staking), address(treasury));
+        ghecta.migrate(address(staking), address(shecta));
 
         // Give the treasury permissions to mint
         authority.pushVault(address(treasury), true);
 
-        // Deposit a token who's profit (3rd param) determines how much ohm the treasury can mint
+        // Deposit a token who's profit (3rd param) determines how much hecta the treasury can mint
         uint256 depositAmount = 20e18;
         treasury.deposit(depositAmount, address(mockToken), BOUNTY.mul(2)); // Mints (depositAmount- 2xBounty) for this contract
     }
@@ -108,32 +109,32 @@ contract StakingTest is DSTest {
     }
 
     function testStake() public {
-        ohm.approve(address(staking), AMOUNT);
+        hecta.approve(address(staking), AMOUNT);
         uint256 amountStaked = staking.stake(address(this), AMOUNT, true, true);
         assertEq(amountStaked, AMOUNT);
     }
 
-    function testStakeAtRebaseToGohm() public {
+    function testStakeAtRebaseToGhecta() public {
         // Move into next rebase window
         hevm.warp(EPOCH_LENGTH);
 
-        ohm.approve(address(staking), AMOUNT);
-        bool isSohm = false;
+        hecta.approve(address(staking), AMOUNT);
+        bool isShecta = false;
         bool claim = true;
-        uint256 gOHMRecieved = staking.stake(address(this), AMOUNT, isSohm, claim);
+        uint256 gHECTARecieved = staking.stake(address(this), AMOUNT, isShecta, claim);
 
-        uint256 expectedAmount = gohm.balanceTo(AMOUNT.add(BOUNTY));
-        assertEq(gOHMRecieved, expectedAmount);
+        uint256 expectedAmount = ghecta.balanceTo(AMOUNT.add(BOUNTY));
+        assertEq(gHECTARecieved, expectedAmount);
     }
 
     function testStakeAtRebase() public {
         // Move into next rebase window
         hevm.warp(EPOCH_LENGTH);
 
-        ohm.approve(address(staking), AMOUNT);
-        bool isSohm = true;
+        hecta.approve(address(staking), AMOUNT);
+        bool isShecta = true;
         bool claim = true;
-        uint256 amountStaked = staking.stake(address(this), AMOUNT, isSohm, claim);
+        uint256 amountStaked = staking.stake(address(this), AMOUNT, isShecta, claim);
 
         uint256 expectedAmount = AMOUNT.add(BOUNTY);
         assertEq(amountStaked, expectedAmount);
@@ -141,96 +142,96 @@ contract StakingTest is DSTest {
 
     function testUnstake() public {
         bool triggerRebase = true;
-        bool isSohm = true;
+        bool isShecta = true;
         bool claim = true;
 
-        // Stake the ohm
-        uint256 initialOhmBalance = ohm.balanceOf(address(this));
-        ohm.approve(address(staking), initialOhmBalance);
-        uint256 amountStaked = staking.stake(address(this), initialOhmBalance, isSohm, claim);
-        assertEq(amountStaked, initialOhmBalance);
+        // Stake the hecta
+        uint256 initialHectaBalance = hecta.balanceOf(address(this));
+        hecta.approve(address(staking), initialHectaBalance);
+        uint256 amountStaked = staking.stake(address(this), initialHectaBalance, isShecta, claim);
+        assertEq(amountStaked, initialHectaBalance);
 
         // Validate balances post stake
-        uint256 ohmBalance = ohm.balanceOf(address(this));
-        uint256 sOhmBalance = sohm.balanceOf(address(this));
-        assertEq(ohmBalance, 0);
-        assertEq(sOhmBalance, initialOhmBalance);
+        uint256 hectaBalance = hecta.balanceOf(address(this));
+        uint256 sHectaBalance = shecta.balanceOf(address(this));
+        assertEq(hectaBalance, 0);
+        assertEq(sHectaBalance, initialHectaBalance);
 
-        // Unstake sOHM
-        sohm.approve(address(staking), sOhmBalance);
-        staking.unstake(address(this), sOhmBalance, triggerRebase, isSohm);
+        // Unstake sHECTA
+        shecta.approve(address(staking), sHectaBalance);
+        staking.unstake(address(this), sHectaBalance, triggerRebase, isShecta);
 
         // Validate Balances post unstake
-        ohmBalance = ohm.balanceOf(address(this));
-        sOhmBalance = sohm.balanceOf(address(this));
-        assertEq(ohmBalance, initialOhmBalance);
-        assertEq(sOhmBalance, 0);
+        hectaBalance = hecta.balanceOf(address(this));
+        sHectaBalance = shecta.balanceOf(address(this));
+        assertEq(hectaBalance, initialHectaBalance);
+        assertEq(sHectaBalance, 0);
     }
 
     function testUnstakeAtRebase() public {
         bool triggerRebase = true;
-        bool isSohm = true;
+        bool isShecta = true;
         bool claim = true;
 
-        // Stake the ohm
-        uint256 initialOhmBalance = ohm.balanceOf(address(this));
-        ohm.approve(address(staking), initialOhmBalance);
-        uint256 amountStaked = staking.stake(address(this), initialOhmBalance, isSohm, claim);
-        assertEq(amountStaked, initialOhmBalance);
+        // Stake the hecta
+        uint256 initialHectaBalance = hecta.balanceOf(address(this));
+        hecta.approve(address(staking), initialHectaBalance);
+        uint256 amountStaked = staking.stake(address(this), initialHectaBalance, isShecta, claim);
+        assertEq(amountStaked, initialHectaBalance);
 
         // Move into next rebase window
         hevm.warp(EPOCH_LENGTH);
 
         // Validate balances post stake
-        // Post initial rebase, distribution amount is 0, so sOHM balance doens't change.
-        uint256 ohmBalance = ohm.balanceOf(address(this));
-        uint256 sOhmBalance = sohm.balanceOf(address(this));
-        assertEq(ohmBalance, 0);
-        assertEq(sOhmBalance, initialOhmBalance);
+        // Post initial rebase, distribution amount is 0, so sHECTA balance doens't change.
+        uint256 hectaBalance = hecta.balanceOf(address(this));
+        uint256 sHectaBalance = shecta.balanceOf(address(this));
+        assertEq(hectaBalance, 0);
+        assertEq(sHectaBalance, initialHectaBalance);
 
-        // Unstake sOHM
-        sohm.approve(address(staking), sOhmBalance);
-        staking.unstake(address(this), sOhmBalance, triggerRebase, isSohm);
+        // Unstake sHECTA
+        shecta.approve(address(staking), sHectaBalance);
+        staking.unstake(address(this), sHectaBalance, triggerRebase, isShecta);
 
         // Validate balances post unstake
-        ohmBalance = ohm.balanceOf(address(this));
-        sOhmBalance = sohm.balanceOf(address(this));
-        uint256 expectedAmount = initialOhmBalance.add(BOUNTY); // Rebase earns a bounty
-        assertEq(ohmBalance, expectedAmount);
-        assertEq(sOhmBalance, 0);
+        hectaBalance = hecta.balanceOf(address(this));
+        sHectaBalance = shecta.balanceOf(address(this));
+        uint256 expectedAmount = initialHectaBalance.add(BOUNTY); // Rebase earns a bounty
+        assertEq(hectaBalance, expectedAmount);
+        assertEq(sHectaBalance, 0);
     }
 
-    function testUnstakeAtRebaseFromGohm() public {
+    function testUnstakeAtRebaseFromGhecta() public {
         bool triggerRebase = true;
-        bool isSohm = false;
+        bool isShecta = false;
         bool claim = true;
 
-        // Stake the ohm
-        uint256 initialOhmBalance = ohm.balanceOf(address(this));
-        ohm.approve(address(staking), initialOhmBalance);
-        uint256 amountStaked = staking.stake(address(this), initialOhmBalance, isSohm, claim);
-        uint256 gohmAmount = gohm.balanceTo(initialOhmBalance);
-        assertEq(amountStaked, gohmAmount);
+        // Stake the hecta
+        uint256 initialHectaBalance = hecta.balanceOf(address(this));
+        hecta.approve(address(staking), initialHectaBalance);
+        uint256 amountStaked = staking.stake(address(this), initialHectaBalance, isShecta, claim);
+        uint256 ghectaAmount = ghecta.balanceTo(initialHectaBalance);
+        assertEq(amountStaked, ghectaAmount);
 
         // test the unstake
         // Move into next rebase window
         hevm.warp(EPOCH_LENGTH);
 
         // Validate balances post-stake
-        uint256 ohmBalance = ohm.balanceOf(address(this));
-        uint256 gohmBalance = gohm.balanceOf(address(this));
-        assertEq(ohmBalance, 0);
-        assertEq(gohmBalance, gohmAmount);
+        uint256 hectaBalance = hecta.balanceOf(address(this));
+        uint256 ghectaBalance = ghecta.balanceOf(address(this));
+        assertEq(hectaBalance, 0);
+        assertEq(ghectaBalance, ghectaAmount);
 
-        // Unstake gOHM
-        gohm.approve(address(staking), gohmBalance);
-        staking.unstake(address(this), gohmBalance, triggerRebase, isSohm);
+        // Unstake gHECTA
+        ghecta.approve(address(staking), ghectaBalance);
+        staking.unstake(address(this), ghectaBalance, triggerRebase, isShecta);
 
         // Validate balances post unstake
-        ohmBalance = ohm.balanceOf(address(this));
-        gohmBalance = gohm.balanceOf(address(this));
-        uint256 expectedOhm = initialOhmBalance.add(BOUNTY); // Rebase earns a bounty
-        assertEq(ohmBalance, expectedOhm);
-        assertEq(gohmBalance, 0);
+        hectaBalance = hecta.balanceOf(address(this));
+        ghectaBalance = ghecta.balanceOf(address(this));
+        uint256 expectedHecta = initialHectaBalance.add(BOUNTY); // Rebase earns a bounty
+        assertEq(hectaBalance, expectedHecta);
+        assertEq(ghectaBalance, 0);
     }
 }

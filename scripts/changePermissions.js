@@ -1,11 +1,9 @@
 const { ethers } = require("hardhat");
-const { CONTRACTS, ZERO_ADDRESS, LARGE_APPROVAL } = require("./constants");
-
 
 async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deployer: " + deployer.address);
-    
+
     const governorAddress = "";
     const guardianAddress = "";
     const policyAddress = "";

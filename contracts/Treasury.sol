@@ -247,7 +247,10 @@ contract HectagonTreasury is HectagonAccessControlled, ITreasury {
      * @param _amount uint256
      */
     function repayDebtWithHECTA(uint256 _amount) external {
-        require(permissions[STATUS.RESERVEDEBTOR][msg.sender] || permissions[STATUS.HECTADEBTOR][msg.sender], notApproved);
+        require(
+            permissions[STATUS.RESERVEDEBTOR][msg.sender] || permissions[STATUS.HECTADEBTOR][msg.sender],
+            notApproved
+        );
         HECTA.burnFrom(msg.sender, _amount);
         sHECTA.changeDebt(_amount, msg.sender, false);
         totalDebt = totalDebt.sub(_amount);
@@ -272,7 +275,9 @@ contract HectagonTreasury is HectagonAccessControlled, ITreasury {
         address[] memory liquidityToken = registry[STATUS.LIQUIDITYTOKEN];
         for (uint256 i = 0; i < liquidityToken.length; i++) {
             if (permissions[STATUS.LIQUIDITYTOKEN][liquidityToken[i]]) {
-                reserves = reserves.add(tokenValue(liquidityToken[i], IERC20(liquidityToken[i]).balanceOf(address(this))));
+                reserves = reserves.add(
+                    tokenValue(liquidityToken[i], IERC20(liquidityToken[i]).balanceOf(address(this)))
+                );
             }
         }
         totalReserves = reserves;
@@ -372,7 +377,14 @@ contract HectagonTreasury is HectagonAccessControlled, ITreasury {
             timelock = block.number.add(blocksNeededForQueue.mul(2));
         }
         permissionQueue.push(
-            Queue({managing: _status, toPermit: _address, calculator: _calculator, timelockEnd: timelock, nullify: false, executed: false})
+            Queue({
+                managing: _status,
+                toPermit: _address,
+                calculator: _calculator,
+                timelockEnd: timelock,
+                nullify: false,
+                executed: false
+            })
         );
         emit PermissionQueued(_status, _address);
     }

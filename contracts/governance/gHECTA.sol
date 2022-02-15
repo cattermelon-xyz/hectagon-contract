@@ -9,7 +9,6 @@ import "../interfaces/IgHECTA.sol";
 import "../types/ERC20.sol";
 
 contract gHECTA is IgHECTA, ERC20 {
-
     /* ========== DEPENDENCIES ========== */
 
     using Address for address;
@@ -38,7 +37,7 @@ contract gHECTA is IgHECTA, ERC20 {
     /* ========== STATE VARIABLES ========== */
 
     IsHECTA public sHECTA;
-    address public approved; 
+    address public approved;
     bool public migrated;
 
     mapping(address => mapping(uint256 => Checkpoint)) public checkpoints;
@@ -47,9 +46,7 @@ contract gHECTA is IgHECTA, ERC20 {
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor(address _sHECTA)
-        ERC20("Governance HECTA", "gHECTA", 18)
-    {
+    constructor(address _sHECTA) ERC20("Governance HECTA", "gHECTA", 18) {
         require(_sHECTA != address(0), "Zero address: sHECTA");
         sHECTA = IsHECTA(_sHECTA);
         approved = msg.sender;

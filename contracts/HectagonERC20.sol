@@ -13,10 +13,11 @@ import "./types/HectagonAccessControlled.sol";
 contract HectagonERC20Token is ERC20Permit, IHECTA, HectagonAccessControlled {
     using SafeMath for uint256;
 
-    constructor(address _authority) 
-    ERC20("Hectagon", "HECTA", 9) 
-    ERC20Permit("Hectagon") 
-    HectagonAccessControlled(IHectagonAuthority(_authority)) {}
+    constructor(address _authority)
+        ERC20("Hectagon", "HECTA", 9)
+        ERC20Permit("Hectagon")
+        HectagonAccessControlled(IHectagonAuthority(_authority))
+    {}
 
     function mint(address account_, uint256 amount_) external override onlyVault {
         _mint(account_, amount_);
@@ -31,7 +32,10 @@ contract HectagonERC20Token is ERC20Permit, IHECTA, HectagonAccessControlled {
     }
 
     function _burnFrom(address account_, uint256 amount_) internal {
-        uint256 decreasedAllowance_ = allowance(account_, msg.sender).sub(amount_, "ERC20: burn amount exceeds allowance");
+        uint256 decreasedAllowance_ = allowance(account_, msg.sender).sub(
+            amount_,
+            "ERC20: burn amount exceeds allowance"
+        );
 
         _approve(account_, msg.sender, decreasedAllowance_);
         _burn(account_, amount_);

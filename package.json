@@ -6,14 +6,15 @@
     "test": "test"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.4.2",
-    "@uniswap/v3-periphery": "^1.2.0"
   },
   "devDependencies": {
+    "@ethersproject/experimental": "^5.5.0",
+    "@rari-capital/solmate": "^6.2.0",
     "@defi-wonderland/smock": "^2.0.7",
-    "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
+    "@nomiclabs/hardhat-ethers": "2.0.4",
     "@nomiclabs/hardhat-etherscan": "^2.1.7",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/contracts": "^4.4.2",
     "@typechain/ethers-v5": "^7.1.2",
     "@typechain/hardhat": "^2.3.0",
     "@types/chai": "^4.2.22",
@@ -41,17 +42,21 @@
     "ts-mocha": "^8.0.0",
     "ts-node": "^10.2.1",
     "typechain": "^5.1.2",
-    "typescript": "^4.4.3"
+    "typescript": "^4.4.3",
+    "retry": "^0.13.1"
   },
   "scripts": {
+    "cron:rebase:testnet": "hardhat run scripts/cron/rebase.js --network testnet",
+    "cron:rebase:binance": "hardhat run scripts/cron/rebase.js --network binance",
+    "cron:rebase:rinkeby": "hardhat run scripts/cron/rebase.js --network rinkeby",
     "lint": "eslint \"**/*.{js,ts}\" && solhint src/**/*.sol",
     "lint:fix": "eslint --fix \"**/*.{js,ts}\" && solhint --fix src/**/*.sol",
     "lint:sol": "solhint -f table contracts/**/*.sol",
     "format": "prettier --check \"**/*.{ts,js,sol}\"",
     "format:fix": "prettier --write \"**/*.{ts,js,sol}\"",
     "compile": "hardhat compile",
+    "clean": "hardhat clean",
     "test": "hardhat test",
-    "test-phecta-only": "ts-mocha --timeout 10000 ./test/prehecta/*.test.ts",
     "gas": "REPORT_GAS=true hardhat test",
     "coverage": "HARDHAT_DEPLOY_FIXTURE=true hardhat coverage",
     "typechain": "TS_NODE_TRANSPILE_ONLY=true hardhat typechain",

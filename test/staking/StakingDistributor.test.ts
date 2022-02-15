@@ -1,4 +1,4 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signers";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import chai, { expect } from "chai";
 import { ethers } from "hardhat";
 import { FakeContract, smock } from "@defi-wonderland/smock";
@@ -30,7 +30,7 @@ describe("Distributor", () => {
         [owner, staking, governor, guardian, other] = await ethers.getSigners();
         treasuryFake = await smock.fake<ITreasury>("ITreasury");
         hectaFake = await smock.fake<IHECTA>("IHECTA");
-        authority = await (new HectagonAuthority__factory(owner)).deploy(
+        authority = await new HectagonAuthority__factory(owner).deploy(
             governor.address,
             guardian.address,
             owner.address,
@@ -40,7 +40,7 @@ describe("Distributor", () => {
 
     describe("constructor", () => {
         it("constructs correctly", async () => {
-            const distributor = await new Distributor__factory(owner).deploy(
+            await new Distributor__factory(owner).deploy(
                 treasuryFake.address,
                 hectaFake.address,
                 staking.address,
@@ -341,10 +341,10 @@ describe("Distributor", () => {
 
             it("must be done by either governor or guardian", async () => {
                 await distributor.connect(governor).addRecipient(staking.address, 2975);
-                await expect(
-                    distributor.connect(other).removeRecipient(0)
-                ).to.be.revertedWith("Caller is not governor or guardian");
+                await expect(distributor.connect(other).removeRecipient(0)).to.be.revertedWith(
+                    "Caller is not governor or guardian"
+                );
             });
         });
-      });
+    });
 });

@@ -1,11 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { waitFor } from "../txHelper";
-import {
-    CONTRACTS,
-    INITIAL_REWARD_RATE,
-    INITIAL_INDEX
-} from "../constants";
+import { CONTRACTS, INITIAL_REWARD_RATE, INITIAL_INDEX } from "../constants";
 import {
     SHectagon__factory,
     GHECTA__factory,
@@ -38,7 +34,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
     const authorityDeployment = await deployments.get(CONTRACTS.authority);
     const authority = HectagonAuthority__factory.connect(authorityDeployment.address, signer);
-    
 
     // Step 1: Set treasury as vault on authority
     await waitFor(authority.pushVault(treasuryDeployment.address, true));
@@ -56,7 +51,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
     // Step 4: Initialize sHecta and set the index
     if ((await sHecta.gHECTA()) == ethers.constants.AddressZero) {
-        console.log("Setup -- Initialize sHecta and set the index")
+        console.log("Setup -- Initialize sHecta and set the index");
         await waitFor(sHecta.setIndex(INITIAL_INDEX)); // TODO
         await waitFor(sHecta.setgHECTA(gHecta.address));
         await waitFor(sHecta.initialize(staking.address, treasuryDeployment.address));

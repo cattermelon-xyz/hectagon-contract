@@ -1,4 +1,4 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signers";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import chai, { expect } from "chai";
 import { ethers } from "hardhat";
 const { BigNumber } = ethers;
@@ -249,8 +249,6 @@ describe("HectagonStaking", () => {
                 // the rebasing flag is taken into account in the claim method
                 const amount = 1000;
                 const gons = 10;
-                const rebasing = true;
-                const claim = true;
 
                 hectaFake.transferFrom
                     .whenCalledWith(alice.address, staking.address, amount)

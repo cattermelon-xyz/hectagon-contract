@@ -27,7 +27,7 @@ export const FIRST_EPOCH_TIME = "1644896415";
 // init system
 export const INITIAL_REWARD_RATE = "3000";
 export const INITIAL_INDEX = "1000000000";
-// 
+//
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 export const BOUNTY_AMOUNT = "100000000";

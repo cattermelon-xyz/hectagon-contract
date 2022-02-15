@@ -2,7 +2,6 @@
 pragma solidity >=0.7.5;
 
 interface IERC2612Permit {
-
     function permit(
         address owner,
         address spender,

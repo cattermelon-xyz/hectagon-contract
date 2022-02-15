@@ -1,6 +1,5 @@
 const { ethers } = require("hardhat");
-const { CONTRACTS, ZERO_ADDRESS, LARGE_APPROVAL } = require("./constants");
-
+const { ZERO_ADDRESS, LARGE_APPROVAL } = require("./constants");
 
 async function main() {
     const [deployer] = await ethers.getSigners();
@@ -23,14 +22,11 @@ async function main() {
     console.log("LARGE_APPROVAL");
     await treasury.enable("2", busd.address, ZERO_ADDRESS);
     // Deposit 10,000,000 BUSD to treasury, 100,000 HECTA gets minted to deployer and 9,900,000 are in treasury as excesss reserves
-    await treasury.deposit(
-        "10000000000000000000000000",
-        busd.address,
-        "9900000000000000"
+    await treasury.deposit("10000000000000000000000000", busd.address, "9900000000000000");
+
+    console.log(
+        "deposit 10,000,000 BUSD to treasury, 100,000 HECTA gets minted to deployer and 9,900,000 are in treasury as excesss reserves"
     );
-
-    console.log("deposit 10,000,000 BUSD to treasury, 100,000 HECTA gets minted to deployer and 9,900,000 are in treasury as excesss reserves");
-
 }
 
 // We recommend this pattern to be able to use async/await everywhere
