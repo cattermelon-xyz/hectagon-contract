@@ -13,7 +13,7 @@ export const CONTRACTS: Record<string, string> = {
     migrator: "HectagonTokenMigrator",
     circulatingSupply: "HectaCirculatingSupplyConrtact",
     redeemHelper: "RedeemHelper",
-}; 
+};
 
 // Constructor Arguments
 export const TREASURY_TIMELOCK = 0;

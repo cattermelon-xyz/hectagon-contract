@@ -4,14 +4,14 @@ const { ZERO_ADDRESS, LARGE_APPROVAL } = require("./constants");
 async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deployer: " + deployer.address);
-    
+
     const treasuryAddress = "0x8335c8D5c40298868c1B161A5086559fcD1B5cB9";
 
     const HectagonTreasury = await ethers.getContractFactory("HectagonTreasury");
     const treasury = await HectagonTreasury.attach(treasuryAddress);
     const BUSD = await ethers.getContractFactory("BEP20Token");
     const busd = await BUSD.deploy();
-    
+
     console.log("busd:", busd.address);
 
     await treasury.enable("0", deployer.address, ZERO_ADDRESS);

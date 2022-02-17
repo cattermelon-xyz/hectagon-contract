@@ -12,7 +12,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
     await deploy(CONTRACTS.pHecta, {
         from: deployer,
-        args: [treasuryDeployment.address, hectaDeployment.address],
+        args: [hectaDeployment.address, treasuryDeployment.address],
         log: true,
         skipIfAlreadyDeployed: true,
     });
@@ -20,9 +20,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
 func.tags = [CONTRACTS.pHecta, "private"];
 
-func.dependencies = [
-    CONTRACTS.treasury,
-    CONTRACTS.hecta,
-];
+func.dependencies = [CONTRACTS.treasury, CONTRACTS.hecta];
 
 export default func;

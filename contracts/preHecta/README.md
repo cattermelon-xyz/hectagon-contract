@@ -5,16 +5,13 @@
 4. The accumulated `profit` of each holder is the maximum pHecta one can exercise for Hecta or `max_claim`
 5. In order to exercise 1 Hecta, holder must:
 
- - Approve smartcontract to be to transfer `BUSD`, pHecta out of their wallet 
+ - Approve smartcontract to be to transfer `BUSD`, pHecta out of their wallet
  - Run the smartcontract of which will transfer 1 `BUSD` to the treasury, burn 1 pHecta then recalculate pHecta holder's `max_claim`
+ 6. At each point in time the claimed amount of pHeacta is less than 10% of the Hecta total supply
 
 
  # What is a space?
  A space is the time within 2 `rebase` action performed by the team. A space lasts approx 7 days.
-In a `rebase` action, protocol will 
-- anchor the total number of Hecta and total number of pHecta for `pHecta exercising` 
+In a `rebase` action, protocol will
+- anchor the total number of Hecta and total number of pHecta for `pHecta exercising`
 - distribute profit to all pHecta holder accordingly to their ownership percentage.
-
-# Todo
-1. Create contract `ExercisePreHectagon` is `ERC20`, `Pausable`
-2. Create script to migrate
