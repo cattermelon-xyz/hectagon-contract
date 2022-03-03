@@ -10,6 +10,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
     await deploy(CONTRACTS.pHecta, {
         from: deployer,
+        args: [],
         log: true,
         skipIfAlreadyDeployed: true,
     });

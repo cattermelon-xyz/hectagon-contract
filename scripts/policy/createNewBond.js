@@ -5,11 +5,11 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deployer: " + deployer.address);
 
-    const bondDepositoryAddress = "0xfBBB32190D7B612Ebb727Df661b6Dc887f902C72";
-    const busdAddress = "0x3471157cE0C3f9d1272CA3510a7d00049bB3B0EA";
-    const bondCalAddress = "0x985AC1159c29890868864e1dfe700D59E4d3365a";
-    const treasuryAddress = "0xDB973a35911b265aC23547C5e3A64e4eD28AFa39";
-    const hectabusdAddress = "0x008ec4be26f514a5cc906b908bff408f63916623";
+    const bondDepositoryAddress = "0x901493B74186E9b87b26060D25496e13e036eD06";
+    const busdAddress = "0x1e965fBC26c8CDBEF6A7125efEea20EB5b26ED9A";
+    const bondCalAddress = "0x5473E34AB19da0e99c4d710D29407760592467a8";
+    const treasuryAddress = "0x3D51101569c52f19597b2653446BfB11379742Ef";
+    const hectabusdAddress = "0xfCD2676F9253f9093ADcAF092181563277aa933c";
 
     const HectagonTreasury = await ethers.getContractFactory("HectagonTreasury");
     const treasury = await HectagonTreasury.attach(treasuryAddress);
@@ -26,7 +26,7 @@ async function main() {
 
     if (!permission) {
         await treasury.enable("5", hectabusdAddress, bondCalAddress);
-        console.log("Add HECTA-BUSD as liquidity token on traesury, ");
+        console.log("Add HECTA-BUSD as liquidity token on traesury");
     }
 
     const hectaPerUSD = (600000 * 1e18) / (50000 * 1e9); // dedcimal 9, BusdAmount / HectaAmount
@@ -34,7 +34,7 @@ async function main() {
         busdAddress,
         ["10000000000000000000000", `${hectaPerUSD}`, "10000"],
         [true, true],
-        ["360", "1643528598"],
+        ["360", "1649388185"],
         ["8640", "86400"]
     );
 
@@ -44,7 +44,7 @@ async function main() {
         hectabusdAddress,
         [`${10000 * 1e9}`, `${marketPrice}`, "10000"],
         [false, true],
-        ["360", "1643528598"],
+        ["360", "1649388185"],
         ["8640", "86400"]
     );
 
