@@ -5,7 +5,7 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deployer: " + deployer.address);
 
-    const treasuryAddress = "0x3D51101569c52f19597b2653446BfB11379742Ef";
+    const treasuryAddress = "0x873695bCd66297BEB628B642d5e6DBbd19367d39";
 
     const HectagonTreasury = await ethers.getContractFactory("HectagonTreasury");
     const treasury = await HectagonTreasury.attach(treasuryAddress);
