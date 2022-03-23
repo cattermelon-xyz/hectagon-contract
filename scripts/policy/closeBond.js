@@ -4,7 +4,7 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deployer: " + deployer.address);
 
-    const bondDepositoryAddress = "0xfBBB32190D7B612Ebb727Df661b6Dc887f902C72";
+    const bondDepositoryAddress = "0x466CB9382856cC732499105558739E81ffBC961B";
     const HectagonBondDepositoryV2 = await ethers.getContractFactory("HectagonBondDepositoryV2");
     const hectagonBondDepositoryV2 = await HectagonBondDepositoryV2.attach(bondDepositoryAddress);
 

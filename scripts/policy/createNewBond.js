@@ -5,11 +5,11 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deployer: " + deployer.address);
 
-    const bondDepositoryAddress = "0x901493B74186E9b87b26060D25496e13e036eD06";
-    const busdAddress = "0x1e965fBC26c8CDBEF6A7125efEea20EB5b26ED9A";
-    const bondCalAddress = "0x5473E34AB19da0e99c4d710D29407760592467a8";
-    const treasuryAddress = "0x3D51101569c52f19597b2653446BfB11379742Ef";
-    const hectabusdAddress = "0xfCD2676F9253f9093ADcAF092181563277aa933c";
+    const bondDepositoryAddress = "0x466CB9382856cC732499105558739E81ffBC961B";
+    const busdAddress = "0x59271a5Ed2b1163939173115544953658DD58EAE";
+    const bondCalAddress = "0x5C7a2941283Eaf4e06e6d0bA7ACc6D8fC19F08Af";
+    const treasuryAddress = "0x873695bCd66297BEB628B642d5e6DBbd19367d39";
+    const hectabusdAddress = "0xedA6210a0e8Aee915bECaB3d6e42281a10b9D206";
 
     const HectagonTreasury = await ethers.getContractFactory("HectagonTreasury");
     const treasury = await HectagonTreasury.attach(treasuryAddress);
