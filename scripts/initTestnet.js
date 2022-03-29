@@ -1,32 +1,28 @@
 const { ethers } = require("hardhat");
-const { ZERO_ADDRESS, LARGE_APPROVAL } = require("./constants");
+const { ZERO_ADDRESS, ADDRESSES, LARGE_APPROVAL } = require("./constants");
 
 async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deployer: " + deployer.address);
 
-    const treasuryAddress = "0x873695bCd66297BEB628B642d5e6DBbd19367d39";
-
     const HectagonTreasury = await ethers.getContractFactory("HectagonTreasury");
-    const treasury = await HectagonTreasury.attach(treasuryAddress);
-    const BUSD = await ethers.getContractFactory("BEP20Token");
-    const busd = await BUSD.deploy();
+    const treasury = await HectagonTreasury.attach(ADDRESSES.treasury);
 
-    console.log("busd:", busd.address);
+    const BUSD = await ethers.getContractFactory("BEP20Token");
+    const busd = await BUSD.attach(ADDRESSES.busd);
 
     await treasury.enable("0", deployer.address, ZERO_ADDRESS);
     await treasury.enable("4", deployer.address, ZERO_ADDRESS);
     console.log("Add Treasury's deposit permission to deployer");
 
-    await busd.approve(treasuryAddress, LARGE_APPROVAL);
+    await busd.approve(ADDRESSES.treasury, LARGE_APPROVAL);
     console.log("LARGE_APPROVAL");
-    await treasury.enable("2", busd.address, ZERO_ADDRESS);
-    // Deposit 10,000,000 BUSD to treasury, 100,000 HECTA gets minted to deployer and 9,900,000 are in treasury as excesss reserves
-    await treasury.deposit("10000000000000000000000000", busd.address, "9900000000000000");
 
-    console.log(
-        "deposit 10,000,000 BUSD to treasury, 100,000 HECTA gets minted to deployer and 9,900,000 are in treasury as excesss reserves"
-    );
+    await treasury.enable("2", busd.address, ZERO_ADDRESS);
+    console.log("Add Treasury's deposit permission to busd");
+
+    await treasury.deposit("30000000000000000000000", busd.address, "14000000000000");
+    console.log("Treasury deposit");
 }
 
 // We recommend this pattern to be able to use async/await everywhere

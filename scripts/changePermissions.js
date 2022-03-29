@@ -4,11 +4,11 @@ async function main() {
     const [deployer] = await ethers.getSigners();
     console.log("Deployer: " + deployer.address);
 
-    const governorAddress = "";
-    const guardianAddress = "";
-    const policyAddress = "";
+    const governorAddress = "0x8703d1C3cd670dd678ddFacA1e98237f6a342C3C";
+    const guardianAddress = "0x8703d1C3cd670dd678ddFacA1e98237f6a342C3C";
+    const policyAddress = "0x509d6FD596Bb9e66b01B9a87424CDa05b397bF28";
 
-    const authorityAddress = "0xE268A48536Fb11c7A4627dAE4738F7941d7fC1c4";
+    const authorityAddress = "0x523886D6443eD639c6335f75E1f59E6614Db5441";
     const HectagonAuthority = await ethers.getContractFactory("HectagonAuthority");
     const authority = await HectagonAuthority.attach(authorityAddress);
 
