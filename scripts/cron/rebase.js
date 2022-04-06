@@ -12,7 +12,7 @@ async function retryer() {
     const [owner] = await ethers.getSigners();
     console.log("[Cron][Rebase] Owner:", owner.address);
     const managedSigner = new NonceManager(owner);
-    const contract = await ethers.getContractAt("[Cron][Rebase] HectagonStaking", stakingAddress);
+    const contract = await ethers.getContractAt("HectagonStaking", stakingAddress);
     const contractWithSigner = contract.connect(managedSigner);
 
     return new Promise((resolve, reject) => {
