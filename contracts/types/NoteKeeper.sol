@@ -42,12 +42,13 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
     /* ========== ADD ========== */
 
     /**
-     * @notice             adds a new Note for a user, stores the front end & DAO rewards, and mints & stakes payout & rewards
-     * @param _user        the user that owns the Note
-     * @param _payout      the amount of HECTA due to the user
-     * @param _expiry      the timestamp when the Note is redeemable
-     * @param _marketID    the ID of the market deposited into
-     * @return index_      the index of the Note in the user's array
+     * @notice              adds a new Note for a user, stores Ref & DAO rewards, and mints & stakes payout & rewards
+     * @param _user         the user that owns the Note
+     * @param _payout       the amount of HECTA due to the user
+     * @param _expiry       the timestamp when the Note is redeemable
+     * @param _marketID     the ID of the market deposited into
+     * @return index_       the index of the Note in the user's array
+     * @return finalPayout_ the amount of gHECTA due
      */
     function addNote(
         address _user,
@@ -55,14 +56,17 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
         uint48 _expiry,
         uint48 _marketID,
         address _referral
-    ) internal returns (uint256 index_) {
+    ) internal returns (uint256, uint256) {
         // the index of the note is the next in the user's array
-        index_ = notes[_user].length;
+        uint256 index_ = notes[_user].length;
+
+        // front end operators can earn rewards by referring users
+        (uint256 rewards, uint256 finalPayout_) = _giveRewards(_payout, _referral);
 
         // the new note is pushed to the user's array
         notes[_user].push(
             Note({
-                payout: gHECTA.balanceTo(_payout),
+                payout: gHECTA.balanceTo(finalPayout_),
                 created: uint48(block.timestamp),
                 matured: _expiry,
                 redeemed: 0,
@@ -70,14 +74,13 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
             })
         );
 
-        // front end operators can earn rewards by referring users
-        uint256 rewards = _giveRewards(_payout, _referral);
-
         // mint and stake payout
-        treasury.mint(address(this), _payout + rewards);
+        treasury.mint(address(this), rewards);
 
         // note that only the payout gets staked (front end rewards are in HECTA)
-        staking.stake(address(this), _payout, false, true);
+        staking.stake(address(this), finalPayout_, false, true);
+
+        return (index_, finalPayout_);
     }
 
     /* ========== REDEEM ========== */

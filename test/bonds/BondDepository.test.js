@@ -1,6 +1,7 @@
 const { ethers, network } = require("hardhat");
 const { expect } = require("chai");
 const { smock } = require("@defi-wonderland/smock");
+const { BigNumber } = require("ethers");
 
 describe("Bond Depository", async () => {
     const LARGE_APPROVAL = "100000000000000000000000000000000";
@@ -36,6 +37,7 @@ describe("Bond Depository", async () => {
     let tuneInterval = 60 * 60;
 
     let refReward = 10;
+    let buyerReward = 10;
     let daoReward = 50;
 
     var bid = 0;
@@ -53,8 +55,6 @@ describe("Bond Depository", async () => {
 
         depositoryFactory = await ethers.getContractFactory("HectagonBondDepositoryV2");
 
-        const block = await ethers.provider.getBlock("latest");
-        conclusion = block.timestamp + timeToConclusion;
     });
 
     beforeEach(async () => {
@@ -96,11 +96,12 @@ describe("Bond Depository", async () => {
         await hecta.connect(alice).approve(depository.address, LARGE_APPROVAL);
         await dai.connect(bob).approve(depository.address, LARGE_APPROVAL);
 
-        await depository.setRewards(refReward, daoReward);
-        await depository.whitelist(carol.address);
+        await depository.setDAORewards(daoReward);
+        await depository.setReferConfig(carol.address, refReward, buyerReward);
 
         await dai.connect(alice).approve(depository.address, capacity);
-
+        const block = await ethers.provider.getBlock("latest");
+        conclusion = block.timestamp + timeToConclusion;
         // create the first bond
         await depository.create(
             dai.address,
@@ -320,17 +321,38 @@ describe("Bond Depository", async () => {
         expect(bobBalance).to.lessThan(Number(await gHECTA.balanceTo(expectedPayout * 1.0001)));
     });
 
-    it("should give correct rewards to referrer and dao", async () => {
+    it("cannot get rewards in vesting time", async () => {
+        const block = await ethers.provider.getBlock("latest");
+        const timestampBefore = block.timestamp;
+
+        await depository.setRewardTime(timestampBefore + 1000);
+        expect(depository.getReward()).to.be.revertedWith('Cannot get reward in vesting time');
+    });
+
+    it("users can get rewards after vesting time", async () => {
+        let daoBalance = await hecta.balanceOf(deployer.address);
+        const block = await ethers.provider.getBlock("latest");
+        const timestampBefore = block.timestamp;
+
+        await depository.setRewardTime(timestampBefore + 1000);
+        await network.provider.send("evm_increaseTime", [timestampBefore + 1000 + 10]);
+        await depository.getReward();
+
+        const frontendReward = Number(await hecta.balanceOf(deployer.address));
+        expect(frontendReward).to.be.eq(Number(daoBalance));
+    });
+
+    it("should give correct rewards to referrer, dao and buyer", async () => {
         let daoBalance = await hecta.balanceOf(deployer.address);
         let refBalance = await hecta.balanceOf(carol.address);
-        let amount = "10000000000000000000000"; // 10,000
-        let [payout] = await depository
+        let amount = BigNumber.from("10000000000000000000000"); // 10,000
+        let [finalPayout] = await depository
             .connect(bob)
             .callStatic.deposit(bid, amount, initialPrice, bob.address, carol.address);
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
-
+        const payout =  Number(finalPayout) / (1 + buyerReward / 1e4);
         // Mint hecta for depository to payout reward
         await hecta.mint(depository.address, "1000000000000000000000");
 
@@ -362,19 +384,18 @@ describe("Bond Depository", async () => {
         );
         await network.provider.send("evm_increaseTime", [depositInterval]);
         let newPrice = await depository.marketPrice(bid);
-        expect(Number(newPrice)).to.be.lessThan(initialPrice);
+        expect(Number(newPrice)).to.be.lessThan(Number(initialPrice));
     });
 
     it("should close a market", async () => {
-        [capacity, , , , , ,] = await depository.markets(bid);
+        let [capacity, , , , , ,] = await depository.markets(bid);
         expect(Number(capacity)).to.be.greaterThan(0);
         await depository.close(bid);
         [capacity, , , , , ,] = await depository.markets(bid);
         expect(Number(capacity)).to.equal(0);
     });
 
-    // FIXME Works in isolation but not when run in suite
-    it.skip("should not allow deposit past conclusion", async () => {
+    it("should not allow deposit past conclusion", async () => {
         await network.provider.send("evm_increaseTime", [timeToConclusion * 10000]);
         await expect(
             depository.connect(bob).deposit(bid, 0, initialPrice, bob.address, carol.address)
