@@ -17,7 +17,15 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
 
     event CreateMarket(uint256 indexed id, address indexed baseToken, address indexed quoteToken, uint256 initialPrice);
     event CloseMarket(uint256 indexed id);
-    event Bond(uint256 indexed id, uint256 amount, uint256 price);
+    event Bond(
+        uint256 indexed id,
+        uint256 amount,
+        uint256 price,
+        uint256 noteId,
+        address buyer,
+        address indexed referral,
+        uint256 commission
+    );
     event Tuned(uint256 indexed id, uint64 oldControlVariable, uint64 newControlVariable);
 
     /* ======== STATE VARIABLES ======== */
@@ -47,15 +55,13 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
     /* ======== DEPOSIT ======== */
 
     /**
-     * @notice             deposit quote tokens in exchange for a bond from a specified market
-     * @param _id          the ID of the market
-     * @param _amount      the amount of quote token to spend
-     * @param _maxPrice    the maximum price at which to buy
-     * @param _user        the recipient of the payout
-     * @param _referral    the front end operator address
-     * @return payout_     the amount of gHECTA due
-     * @return expiry_     the timestamp at which payout is redeemable
-     * @return index_      the user index of the Note (used to redeem or query information)
+     * @notice              deposit quote tokens in exchange for a bond from a specified market
+     * @param _id           the ID of the market
+     * @param _amount       the amount of quote token to spend
+     * @param _maxPrice     the maximum price at which to buy
+     * @param _user         the recipient of the payout
+     * @param _referral     the front end operator address
+     * @return userBond_    UserBond
      */
     function deposit(
         uint256 _id,
@@ -63,15 +69,7 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
         uint256 _maxPrice,
         address _user,
         address _referral
-    )
-        external
-        override
-        returns (
-            uint256 payout_,
-            uint256 expiry_,
-            uint256 index_
-        )
-    {
+    ) external override returns (UserBond memory userBond_) {
         Market storage market = markets[_id];
         Terms memory term = terms[_id];
         uint48 currentTime = uint48(block.timestamp);
@@ -98,7 +96,7 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
          *
          * 1e18 = HECTA decimals (9) + price decimals (9)
          */
-        payout_ = ((_amount * 1e18) / price) / (10**metadata[_id].quoteDecimals);
+        uint256 payout_ = ((_amount * 1e18) / price) / (10**metadata[_id].quoteDecimals);
 
         // markets have a max payout amount, capping size because deposits
         // do not experience slippage. max payout is recalculated upon tuning
@@ -130,7 +128,7 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
          * i.e. expiration = day 10. when alice deposits on day 1, her term
          * is 9 days. when bob deposits on day 2, his term is 8 days.
          */
-        expiry_ = term.fixedTerm ? term.vesting + currentTime : term.vesting;
+        userBond_.expiry = term.fixedTerm ? term.vesting + currentTime : term.vesting;
 
         // markets keep track of how many quote tokens have been
         // purchased, and how much HECTA has been sold
@@ -140,15 +138,22 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
         // incrementing total debt raises the price of the next bond
         market.totalDebt += uint64(payout_);
 
-        emit Bond(_id, _amount, price);
-
+        uint256 commission_;
         /**
          * user data is stored as Notes. these are isolated array entries
          * storing the amount due, the time created, the time when payout
          * is redeemable, the time when payout was redeemed, and the ID
          * of the market deposited into
          */
-        index_ = addNote(_user, payout_, uint48(expiry_), uint48(_id), _referral);
+        (userBond_.index, userBond_.finalPayout, commission_) = addNote(
+            _user,
+            payout_,
+            uint48(userBond_.expiry),
+            uint48(_id),
+            _referral
+        );
+
+        emit Bond(_id, _amount, price, userBond_.index, _user, _referral, commission_);
 
         // transfer payment to treasury
         market.quoteToken.safeTransferFrom(msg.sender, address(treasury), _amount);

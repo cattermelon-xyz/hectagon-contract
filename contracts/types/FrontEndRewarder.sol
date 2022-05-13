@@ -5,12 +5,25 @@ import "../types/HectagonAccessControlled.sol";
 import "../interfaces/IERC20.sol";
 
 abstract contract FrontEndRewarder is HectagonAccessControlled {
+    struct Reward {
+        uint256 referrer; // reward for referrer (3 decimals: 100 = 1%)
+        uint256 buyer; // reward for bond buyer (3 decimals: 100 = 1%)
+        uint256 referrerAmount;
+    }
+
+    struct Give {
+        uint256 toRef;
+        uint256 toDAO;
+        uint256 toBuyer;
+    }
+
     /* ========= STATE VARIABLES ========== */
 
     uint256 public daoReward; // % reward for dao (3 decimals: 100 = 1%)
-    uint256 public refReward; // % reward for referrer (3 decimals: 100 = 1%)
-    mapping(address => uint256) public rewards; // front end operator rewards
-    mapping(address => bool) public whitelisted; // whitelisted status for operators
+    uint256 public rewardCap = 1000; // % reward Cap for referrer (3 decimals: 100 = 1%)
+    mapping(address => Reward) public rewards; // term for each referers
+    uint256 public rewardTime; // cannot get rewards before that time
+    uint256 private immutable RATE_DENOMINATOR = 1e4;
 
     IERC20 internal immutable hecta; // reward token
 
@@ -20,47 +33,81 @@ abstract contract FrontEndRewarder is HectagonAccessControlled {
 
     /* ========= EXTERNAL FUNCTIONS ========== */
 
-    // pay reward to front end operator
+    // pay reward to referrer
     function getReward() external {
-        uint256 reward = rewards[msg.sender];
+        require(block.timestamp >= rewardTime, "Cannot get reward in vesting time");
+        uint256 reward = rewards[msg.sender].referrerAmount;
 
-        rewards[msg.sender] = 0;
+        rewards[msg.sender].referrerAmount = 0;
         hecta.transfer(msg.sender, reward);
     }
 
     /* ========= INTERNAL ========== */
 
     /**
-     * @notice add new market payout to user data
+     * @notice              add new market payout to user data
+     * @return rewards_     total rewards
+     * @return finalPayout_ buyer final payout
+     * @return commission_  refers commission
      */
-    function _giveRewards(uint256 _payout, address _referral) internal returns (uint256) {
+    function _giveRewards(uint256 _payout, address _referral)
+        internal
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
+    {
         // first we calculate rewards paid to the DAO and to the front end operator (referrer)
-        uint256 toDAO = (_payout * daoReward) / 1e4;
-        uint256 toRef = (_payout * refReward) / 1e4;
+        Give memory give;
+        give.toDAO = (_payout * daoReward) / RATE_DENOMINATOR;
 
-        // and store them in our rewards mapping
-        if (whitelisted[_referral]) {
-            rewards[_referral] += toRef;
-            rewards[authority.guardian()] += toDAO;
-        } else {
-            // the DAO receives both rewards if referrer is not whitelisted
-            rewards[authority.guardian()] += toDAO + toRef;
+        rewards[authority.guardian()].referrerAmount += give.toDAO;
+
+        Reward memory reward = rewards[_referral];
+
+        if (reward.referrer > 0) {
+            give.toRef = (_payout * reward.referrer) / RATE_DENOMINATOR;
+            rewards[_referral].referrerAmount += give.toRef;
         }
-        return toDAO + toRef;
+
+        if (reward.buyer > 0) {
+            give.toBuyer = (_payout * reward.buyer) / RATE_DENOMINATOR;
+        }
+
+        return (give.toDAO + give.toRef + give.toBuyer, give.toBuyer + _payout, give.toRef);
     }
 
     /**
-     * @notice set rewards for front end operators and DAO
+     * @notice set Cap for referrer % reward
      */
-    function setRewards(uint256 _toFrontEnd, uint256 _toDAO) external onlyGovernor {
-        refReward = _toFrontEnd;
+    function setRewardCap(uint256 _cap) external onlyGovernor {
+        rewardCap = _cap;
+    }
+
+    /**
+     * @notice set rewardTime for DAO
+     */
+    function setRewardTime(uint256 _time) external onlyGovernor {
+        rewardTime = _time;
+    }
+
+    /**
+     * @notice set rewards for DAO
+     */
+    function setDAORewards(uint256 _toDAO) external onlyGovernor {
         daoReward = _toDAO;
     }
 
     /**
-     * @notice add or remove addresses from the reward whitelist
+     * @notice set referrer and buyer for specific address
      */
-    function whitelist(address _operator) external onlyPolicy {
-        whitelisted[_operator] = !whitelisted[_operator];
+    function setReferConfig(
+        address _referrer,
+        uint256 _ref,
+        uint256 _buyer
+    ) external onlyPolicy {
+        require((_buyer + _ref) <= rewardCap, "reward too high");
+        rewards[_referrer] = Reward(_ref, _buyer, rewards[_referrer].referrerAmount);
     }
 }

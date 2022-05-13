@@ -42,6 +42,13 @@ interface IBondDepository {
         bool active;
     }
 
+    // user's bond info
+    struct UserBond {
+        uint256 finalPayout;
+        uint256 expiry;
+        uint256 index;
+    }
+
     /**
      * @notice deposit market
      * @param _bid uint256
@@ -49,9 +56,7 @@ interface IBondDepository {
      * @param _maxPrice uint256
      * @param _user address
      * @param _referral address
-     * @return payout_ uint256
-     * @return expiry_ uint256
-     * @return index_ uint256
+     * @return userBond_ UserBond
      */
     function deposit(
         uint256 _bid,
@@ -59,13 +64,7 @@ interface IBondDepository {
         uint256 _maxPrice,
         address _user,
         address _referral
-    )
-        external
-        returns (
-            uint256 payout_,
-            uint256 expiry_,
-            uint256 index_
-        );
+    ) external returns (UserBond memory userBond_);
 
     function create(
         IERC20 _quoteToken, // token used to deposit
