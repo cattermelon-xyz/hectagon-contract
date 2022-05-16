@@ -68,7 +68,7 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
         uint256 index_ = notes[_user].length;
 
         // front end operators can earn rewards by referring users
-        (uint256 rewards, uint256 finalPayout_, uint256 commission_) = _giveRewards(_payout, _referral);
+        (uint256 rewards, uint256 finalPayout_, uint256 commission_) = _giveRewards(_payout, _referral, _user);
 
         // the new note is pushed to the user's array
         notes[_user].push(
