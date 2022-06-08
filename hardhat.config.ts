@@ -50,7 +50,7 @@ const config: HardhatUserConfig = {
     networks: {
         hardhat: {
             forking: {
-                url: `https://speedy-nodes-nyc.moralis.io/${moralisApiKey}/bsc/mainnet`,
+                url: `https://speedy-nodes-nyc.moralis.io/${moralisApiKey}/bsc/mainnet/archive`,
             },
             chainId: chainIds.hardhat,
             gas: 6000000,

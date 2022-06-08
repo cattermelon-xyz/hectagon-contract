@@ -17,11 +17,18 @@ abstract contract FrontEndRewarder is HectagonAccessControlled {
         uint256 toBuyer;
     }
 
+    struct PartnerReward {
+        uint256 amount; // partner's remaining hecta bonus, decimal 9
+        uint256 percent; // partner's bonus percent per deposit, 3 decimals: 100 = 1%
+    }
+    
+
     /* ========= STATE VARIABLES ========== */
 
     uint256 public daoReward; // % reward for dao (3 decimals: 100 = 1%)
-    uint256 public rewardCap = 1000; // % reward Cap for referrer (3 decimals: 100 = 1%)
+    uint256 public rewardCap = 1000; // % reward Cap for referrer (3 decimals: 1000 = 10%)
     mapping(address => Reward) public rewards; // term for each referers
+    mapping(address => PartnerReward) public partnerRewards; // reward term for each partner
     uint256 public rewardTime; // cannot get rewards before that time
     uint256 private immutable RATE_DENOMINATOR = 1e4;
 
@@ -50,7 +57,7 @@ abstract contract FrontEndRewarder is HectagonAccessControlled {
      * @return finalPayout_ buyer final payout
      * @return commission_  refers commission
      */
-    function _giveRewards(uint256 _payout, address _referral)
+    function _giveRewards(uint256 _payout, address _referral, address _buyer)
         internal
         returns (
             uint256,
@@ -63,16 +70,27 @@ abstract contract FrontEndRewarder is HectagonAccessControlled {
         give.toDAO = (_payout * daoReward) / RATE_DENOMINATOR;
 
         rewards[authority.guardian()].referrerAmount += give.toDAO;
+        
+        // check partner logic
+        if(partnerRewards[_buyer].percent > 0) {
+            uint256 partnerReward = (_payout * partnerRewards[_buyer].percent) / RATE_DENOMINATOR;
+            if(partnerReward >= partnerRewards[_buyer].amount) {
+                give.toBuyer = partnerRewards[_buyer].amount;
+            } else {
+                give.toBuyer = partnerReward;
+            }
+            partnerRewards[_buyer].amount -= give.toBuyer;
+        } else {
+            Reward memory reward = rewards[_referral];
 
-        Reward memory reward = rewards[_referral];
+            if (reward.referrer > 0) {
+                give.toRef = (_payout * reward.referrer) / RATE_DENOMINATOR;
+                rewards[_referral].referrerAmount += give.toRef;
+            }
 
-        if (reward.referrer > 0) {
-            give.toRef = (_payout * reward.referrer) / RATE_DENOMINATOR;
-            rewards[_referral].referrerAmount += give.toRef;
-        }
-
-        if (reward.buyer > 0) {
-            give.toBuyer = (_payout * reward.buyer) / RATE_DENOMINATOR;
+            if (reward.buyer > 0) {
+                give.toBuyer = (_payout * reward.buyer) / RATE_DENOMINATOR;
+            }
         }
 
         return (give.toDAO + give.toRef + give.toBuyer, give.toBuyer + _payout, give.toRef);
@@ -109,5 +127,17 @@ abstract contract FrontEndRewarder is HectagonAccessControlled {
     ) external onlyPolicy {
         require((_buyer + _ref) <= rewardCap, "reward too high");
         rewards[_referrer] = Reward(_ref, _buyer, rewards[_referrer].referrerAmount);
+    }
+
+    /**
+     * @notice set partner term
+     */
+    function setPartnerTerm(
+        address _partner,
+        uint256 _amount,
+        uint256 _percent
+    ) external onlyPolicy {
+        require(_partner != address(0), "Zero address: Partner");
+        partnerRewards[_partner] = PartnerReward(_amount, _percent);
     }
 }

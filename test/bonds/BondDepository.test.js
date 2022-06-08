@@ -11,7 +11,7 @@ describe("Bond Depository", async () => {
 
     // Increase timestamp by amount determined by `offset`
 
-    let deployer, alice, bob, carol;
+    let deployer, alice, bob, carol, partner;
     let erc20Factory;
     let authFactory;
     let gHectaFactory;
@@ -25,7 +25,7 @@ describe("Bond Depository", async () => {
     let gHECTA;
     let staking;
 
-    let capacity = 10000e9;
+    let capacity = 100000e9;
     let initialPrice = 400e9;
     let buffer = 2e5;
 
@@ -36,18 +36,17 @@ describe("Bond Depository", async () => {
     let depositInterval = 60 * 60 * 4;
     let tuneInterval = 60 * 60;
 
-    let refReward = 10;
-    let buyerReward = 10;
+    let refReward = 500;
+    let buyerReward = 100;
     let daoReward = 50;
 
     var bid = 0;
-
     /**
      * Everything in this block is only run once before all tests.
      * This is the home for setup methods
      */
     before(async () => {
-        [deployer, alice, bob, carol] = await ethers.getSigners();
+        [deployer, alice, bob, carol, partner] = await ethers.getSigners();
 
         authFactory = await ethers.getContractFactory("HectagonAuthority");
         erc20Factory = await smock.mock("MockERC20");
@@ -369,6 +368,58 @@ describe("Bond Depository", async () => {
         expect(carolReward).to.be.greaterThan(Number(refExpected));
         expect(carolReward).to.be.lessThan(Number(refExpected) * 1.0001);
     });
+
+    describe('Partner buy bond', () => {
+        it("should give correct amount for partner: in case reward smaller than maxAmount", async () => {
+            const partnerMaxAmount = ethers.utils.parseUnits('100', 9);
+            const partnerPercent = 1000; // 10%
+            await depository.setPartnerTerm(partner.address, partnerMaxAmount, partnerPercent);
+            let amount = ethers.utils.parseEther('1');
+            const marketPrice = await depository.marketPrice(bid);
+            const expectedPayout = amount.div(marketPrice);
+
+            const expectedFinalPayout = expectedPayout.add(expectedPayout.mul(partnerPercent).div(1e4));
+
+            let [finalPayout] = await depository
+                .connect(bob)
+                .callStatic.deposit(bid, amount, initialPrice, partner.address, partner.address);
+            const payout = Number(finalPayout) / (1 + partnerPercent / 1e4);
+            const partnerReward = Math.floor(payout * partnerPercent / 1e4);
+            const expectedPatnerRemainingAmount = partnerMaxAmount.sub(partnerReward);
+            await depository
+                .connect(bob)
+                .deposit(bid, amount, initialPrice, partner.address, partner.address);
+            expect(expectedFinalPayout.toNumber()).to.greaterThanOrEqual(finalPayout.toNumber());
+            expect(expectedFinalPayout.toNumber()).to.lessThan(finalPayout.toNumber() * 1.0001);
+
+            const [partnerRewardAmount] = await depository.partnerRewards(partner.address);
+
+            expect(expectedPatnerRemainingAmount.toNumber()).to.greaterThanOrEqual(partnerRewardAmount.toNumber());
+            expect(expectedPatnerRemainingAmount.toNumber()).to.lessThan(partnerRewardAmount.toNumber() * 1.01);
+        });
+
+        it("should give correct amount for partner: in case reward larger than maxAmount", async () => {
+            const partnerMaxAmount = ethers.utils.parseUnits('1', 9);
+            const partnerPercent = 1000; // 10%
+            await depository.setPartnerTerm(partner.address, partnerMaxAmount, partnerPercent);
+            let amount = ethers.utils.parseEther('10000');
+            const marketPrice = await depository.marketPrice(bid);
+            const expectedPayout = amount.div(marketPrice);
+
+            const expectedFinalPayout = expectedPayout.add(partnerMaxAmount);
+            let [finalPayout] = await depository
+                .connect(bob)
+                .callStatic.deposit(bid, amount, initialPrice, partner.address, carol.address);
+            await depository
+                .connect(bob)
+                .deposit(bid, amount, initialPrice, partner.address, carol.address);
+            expect(expectedFinalPayout.toNumber()).to.greaterThanOrEqual(finalPayout.toNumber());
+            expect(expectedFinalPayout.toNumber()).to.lessThan(finalPayout.toNumber() * 1.001);
+
+            const [partnerRewardAmount] = await depository.partnerRewards(partner.address);
+            expect(partnerRewardAmount.toNumber()).to.be.eq(0);
+        });
+    })
 
     it("should decay a max payout in target deposit interval", async () => {
         let [, , , , , maxPayout, ,] = await depository.markets(bid);
