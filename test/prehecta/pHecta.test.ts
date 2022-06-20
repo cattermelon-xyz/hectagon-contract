@@ -132,6 +132,21 @@ describe("Private Hectagon", async () => {
         });
     });
 
+    describe("setVestingLength", () => {
+        it("must be done by owner", async () => {
+            await expect(pHecta.connect(bob).setVestingLength(100)).to.be.revertedWith(
+                "Ownable: caller is not the owner"
+            );
+        });
+
+        it("Owner can be done correctly", async () => {
+            const vestingLength = 1000;
+            const ownerConn = pHecta.connect(owner);
+            await ownerConn.setVestingLength(vestingLength);
+            await expect(await ownerConn.vestingLength()).to.be.equal(vestingLength);
+        });
+    });
+
     describe("initialize", () => {
         it("must be done by owner", async () => {
             await expect(
@@ -443,7 +458,7 @@ describe("Private Hectagon", async () => {
             );
         });
 
-        it("user can claim correctly from space 1", async () => {
+        it("user can exercise correctly from space 1", async () => {
             const ownerConn = pHecta.connect(owner);
             const aliceCurrentSpaceProfit = premintHecta
                 .mul(MaxPHectaToExercise)
@@ -462,21 +477,15 @@ describe("Private Hectagon", async () => {
 
             const aliceInfo = await ownerConn.holders(alice.address);
             const alicePHectaBalance = await pHecta.connect(alice).balanceOf(alice.address);
-            const aliceHectaBalance = await hecta.connect(alice).balanceOf(alice.address);
 
             await expect(alicePHectaBalance).to.be.eq(
                 aliceMockBalance.sub(aliceCurrentSpaceProfit)
             );
-            await expect(aliceHectaBalance).to.be.eq(aliceCurrentSpaceProfit);
-            await expect(aliceInfo[0]).to.be.eq(false); //isTransferable
-            await expect(aliceInfo[1]).to.be.eq(1); // lastRebaseSpaceCount
-            await expect(aliceInfo[2]).to.be.eq(aliceMaxClaim); // maxClaim
-            await expect(aliceInfo[3]).to.be.eq(aliceCurrentSpaceProfit); // claimed
-            await expect(aliceInfo[4]).to.be.eq(aliceCurrentSpaceProfit); // currentSpaceProfit
+            const [amount] = await ownerConn.pendingFor(alice.address, 0);
 
             await Promise.all([
-                expect(alicePHectaBalance).to.be.eq(aliceMockBalance.sub(aliceCurrentSpaceProfit)),
-                expect(aliceHectaBalance).to.be.eq(aliceCurrentSpaceProfit),
+                expect(amount).to.be.eq(aliceCurrentSpaceProfit), //isTransferable
+                expect(aliceInfo[0]).to.be.eq(false), //isTransferable
                 expect(aliceInfo[0]).to.be.eq(false), //isTransferable
                 expect(aliceInfo[1]).to.be.eq(1), // lastRebaseSpaceCount
                 expect(aliceInfo[2]).to.be.eq(aliceMaxClaim), // maxClaim
@@ -587,6 +596,54 @@ describe("Private Hectagon", async () => {
                 expect(bobInfo[3]).to.be.eq(0), // claimed
                 expect(bobInfo[4]).to.be.eq(space2BobCurrentSpaceProfit), // currentSpaceProfit
             ]);
+        });
+    });
+
+    describe("CLAIM", () => {
+        const aliceMockBalance = BigNumber.from("4000000000000000"); // 4000 000 pHecta
+        const bobMockBalance = BigNumber.from("1000000000000000"); // 1000 000 pHecta
+        const vestingLength = 100;
+        beforeEach(async () => {
+            const ownerConn = pHecta.connect(owner);
+            await Promise.all([
+                ownerConn.transfer(alice.address, aliceMockBalance),
+                ownerConn.transfer(bob.address, bobMockBalance),
+                busd.transfer(alice.address, "100000000000000000000000"),
+                busd.transfer(bob.address, "100000000000000000000000"),
+                ownerConn.setVestingLength(vestingLength),
+            ]);
+            await ownerConn.start();
+        });
+
+        it("after exercise and vesting time, user can get their vesting hecta", async () => {
+            const ownerConn = pHecta.connect(owner);
+            const aliceCurrentSpaceProfit = premintHecta
+                .mul(MaxPHectaToExercise)
+                .div(RateDenominator)
+                .mul(aliceMockBalance)
+                .div(PremintPHecta);
+
+            const spaceLength = await ownerConn.spaceLength();
+            await increaseTime(spaceLength.toNumber());
+            await mineBlock();
+            await busd
+                .connect(alice)
+                .approve(pHecta.address, aliceCurrentSpaceProfit.mul(toBusdRate));
+            await pHecta.connect(alice).exercise(aliceCurrentSpaceProfit);
+
+            const alicePHectaBalance = await pHecta.connect(alice).balanceOf(alice.address);
+
+            await expect(alicePHectaBalance).to.be.eq(
+                aliceMockBalance.sub(aliceCurrentSpaceProfit)
+            );
+            await increaseTime(vestingLength + 100);
+            await mineBlock();
+
+            await pHecta.connect(alice).claimAll(alice.address);
+
+            const aliceHectaBalance = await hecta.balanceOf(alice.address);
+
+            await expect(aliceHectaBalance).to.be.eq(aliceCurrentSpaceProfit);
         });
     });
 });
