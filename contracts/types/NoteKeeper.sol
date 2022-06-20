@@ -82,7 +82,7 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
         );
 
         // mint and stake payout
-        treasury.mint(address(this), rewards);
+        treasury.mint(address(this), rewards + _payout);
 
         // note that only the payout gets staked (front end rewards are in HECTA)
         staking.stake(address(this), finalPayout_, false, true);
