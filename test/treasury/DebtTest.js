@@ -35,17 +35,18 @@ describe("Treasury", async () => {
     let erc20Factory;
     let stakingFactory;
     let hectaFactory;
+    let hectaCirculatingSupplyFactory;
     let sHectaFactory;
     let gHectaFactory;
     let treasuryFactory;
     let distributorFactory;
     let authFactory;
-    let mockSHectaFactory;
 
     let auth;
     let dai;
     let lpToken;
     let hecta;
+    let hectaCirculatingSupply;
     let sHecta;
     let staking;
     let gHecta;
@@ -68,6 +69,7 @@ describe("Treasury", async () => {
 
         stakingFactory = await ethers.getContractFactory("HectagonStaking");
         hectaFactory = await ethers.getContractFactory("HectagonERC20Token");
+        hectaCirculatingSupplyFactory = await ethers.getContractFactory("HectaCirculatingSupply");
         sHectaFactory = await ethers.getContractFactory("sHectagon");
         gHectaFactory = await ethers.getContractFactory("gHECTA");
         treasuryFactory = await ethers.getContractFactory("HectagonTreasury");
@@ -89,6 +91,7 @@ describe("Treasury", async () => {
             deployer.address
         ); // TODO
         hecta = await hectaFactory.deploy(auth.address);
+        hectaCirculatingSupply = await hectaCirculatingSupplyFactory.deploy(hecta.address);
         sHecta = await sHectaFactory.deploy();
         gHecta = await gHectaFactory.deploy(sHecta.address);
         staking = await stakingFactory.deploy(
@@ -103,9 +106,9 @@ describe("Treasury", async () => {
         treasury = await treasuryFactory.deploy(hecta.address, "0", auth.address);
         distributor = await distributorFactory.deploy(
             treasury.address,
-            hecta.address,
             staking.address,
-            auth.address
+            auth.address,
+            hectaCirculatingSupply.address
         );
 
         // Setup for each component

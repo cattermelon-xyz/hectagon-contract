@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 import { FakeContract, smock } from "@defi-wonderland/smock";
 import {
     ITreasury,
-    IHECTA,
+    IHectaCirculatingSupply,
     Distributor__factory,
     Distributor,
     HectagonAuthority,
@@ -21,7 +21,7 @@ describe("Distributor", () => {
     let governor: SignerWithAddress;
     let guardian: SignerWithAddress;
     let other: SignerWithAddress;
-    let hectaFake: FakeContract<IHECTA>;
+    let circulatingHectaFake: FakeContract<IHectaCirculatingSupply>;
     let treasuryFake: FakeContract<ITreasury>;
     let distributor: Distributor;
     let authority: HectagonAuthority;
@@ -29,7 +29,7 @@ describe("Distributor", () => {
     beforeEach(async () => {
         [owner, staking, governor, guardian, other] = await ethers.getSigners();
         treasuryFake = await smock.fake<ITreasury>("ITreasury");
-        hectaFake = await smock.fake<IHECTA>("IHECTA");
+        circulatingHectaFake = await smock.fake<IHectaCirculatingSupply>("IHectaCirculatingSupply");
         authority = await new HectagonAuthority__factory(owner).deploy(
             governor.address,
             guardian.address,
@@ -42,7 +42,7 @@ describe("Distributor", () => {
         it("constructs correctly", async () => {
             await new Distributor__factory(owner).deploy(
                 treasuryFake.address,
-                hectaFake.address,
+                circulatingHectaFake.address,
                 staking.address,
                 authority.address
             );
@@ -52,9 +52,9 @@ describe("Distributor", () => {
             await expect(
                 new Distributor__factory(owner).deploy(
                     ZERO_ADDRESS,
-                    hectaFake.address,
                     staking.address,
-                    authority.address
+                    authority.address,
+                    circulatingHectaFake.address
                 )
             ).to.be.reverted;
         });
@@ -63,9 +63,9 @@ describe("Distributor", () => {
             await expect(
                 new Distributor__factory(owner).deploy(
                     treasuryFake.address,
-                    ZERO_ADDRESS,
                     staking.address,
-                    authority.address
+                    authority.address,
+                    ZERO_ADDRESS
                 )
             ).to.be.reverted;
         });
@@ -74,9 +74,9 @@ describe("Distributor", () => {
             await expect(
                 new Distributor__factory(owner).deploy(
                     treasuryFake.address,
-                    hectaFake.address,
-                    ZERO_ADDRESS,
-                    authority.address
+                    authority.address,
+                    circulatingHectaFake.address,
+                    ZERO_ADDRESS
                 )
             ).to.be.reverted;
         });
@@ -86,9 +86,9 @@ describe("Distributor", () => {
         beforeEach(async () => {
             distributor = await new Distributor__factory(owner).deploy(
                 treasuryFake.address,
-                hectaFake.address,
                 staking.address,
-                authority.address
+                authority.address,
+                circulatingHectaFake.address
             );
         });
 
@@ -117,7 +117,7 @@ describe("Distributor", () => {
                 await distributor.connect(governor).addRecipient(staking.address, 2975);
                 await distributor.connect(governor).addRecipient(other.address, 1521);
 
-                hectaFake.totalSupply.returns(10000000);
+                circulatingHectaFake.circulatingSupply.returns(10000000);
                 await distributor.connect(staking).distribute();
 
                 expect(treasuryFake.mint).to.have.been.calledWith(staking.address, 29750);
@@ -263,7 +263,7 @@ describe("Distributor", () => {
 
         describe("nextRewardAt", () => {
             it("returns the number of HECTA to be distributed in the next epoch", async () => {
-                hectaFake.totalSupply.returns(3899568500546135);
+                circulatingHectaFake.circulatingSupply.returns(3899568500546135);
 
                 const rate = 2975;
                 const reward = await distributor.nextRewardAt(rate);
@@ -271,7 +271,7 @@ describe("Distributor", () => {
             });
 
             it("returns zero when rate is zero", async () => {
-                hectaFake.totalSupply.returns(3899568500546135);
+                circulatingHectaFake.circulatingSupply.returns(3899568500546135);
 
                 const rate = 0;
                 const reward = await distributor.nextRewardAt(rate);
@@ -283,14 +283,14 @@ describe("Distributor", () => {
             it("returns the number of HECTA to be distributed to the given address in the next epoch", async () => {
                 const rate = 2975;
                 await distributor.connect(governor).addRecipient(staking.address, rate);
-                hectaFake.totalSupply.returns(3899568500546135);
+                circulatingHectaFake.circulatingSupply.returns(3899568500546135);
 
                 const reward = await distributor.nextRewardFor(staking.address);
                 expect(reward).to.equal(11601216289124);
             });
 
             it("returns the 0 if the address is not a recipient", async () => {
-                hectaFake.totalSupply.returns(3899568500546135);
+                circulatingHectaFake.circulatingSupply.returns(3899568500546135);
 
                 const reward = await distributor.nextRewardFor(other.address);
                 expect(reward).to.equal(0);

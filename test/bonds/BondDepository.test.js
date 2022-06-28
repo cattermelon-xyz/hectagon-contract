@@ -3,7 +3,7 @@ const { expect } = require("chai");
 const { smock } = require("@defi-wonderland/smock");
 const { BigNumber } = require("ethers");
 
-describe.only("Bond Depository", async () => {
+describe("Bond Depository", async () => {
     const LARGE_APPROVAL = "100000000000000000000000000000000";
     // Initial mint for Frax, HECTA and DAI (10,000,000)
     const initialMint = "10000000000000000000000000";
@@ -339,7 +339,9 @@ describe.only("Bond Depository", async () => {
         const timestampBefore = block.timestamp;
 
         await depository.setRewardTime(timestampBefore + 1000);
-        await expect(depository.connect(alice).getReward()).to.be.revertedWith("Cannot get reward in vesting time");
+        await expect(depository.connect(alice).getReward()).to.be.revertedWith(
+            "Cannot get reward in vesting time"
+        );
     });
 
     it("DAO can get rewards in vesting time", async () => {

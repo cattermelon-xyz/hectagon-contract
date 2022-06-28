@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0
-pragma solidity 0.7.5;
+pragma solidity >=0.7.5;
 
-import "../interfaces/IERC20.sol";
-import "../types/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract HectaFaucet is Ownable {
     IERC20 public hecta;
@@ -11,7 +11,7 @@ contract HectaFaucet is Ownable {
         hecta = IERC20(_hecta);
     }
 
-    function setOhm(address _hecta) external onlyOwner {
+    function setHecta(address _hecta) external onlyOwner {
         hecta = IERC20(_hecta);
     }
 

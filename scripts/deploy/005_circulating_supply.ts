@@ -7,8 +7,11 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     const { deploy } = deployments;
     const { deployer } = await getNamedAccounts();
 
+    const hectaDeployment = await deployments.get(CONTRACTS.hecta);
+
     await deploy(CONTRACTS.circulatingSupply, {
         from: deployer,
+        args: [hectaDeployment.address],
         log: true,
         skipIfAlreadyDeployed: true,
     });

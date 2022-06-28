@@ -90,11 +90,7 @@ contract HectagonQuickBond is Ownable, Pausable {
     ) external payable whenNotPaused returns (uint256) {
         uint256 toInvest = _pullTokens(_fromTokenAddress, _amount, _shouldSellEntireBalance);
 
-        uint256 tokensBought = _fillQuote(
-            _fromTokenAddress,
-            toInvest,
-            _path
-        );
+        uint256 tokensBought = _fillQuote(_fromTokenAddress, toInvest, _path);
 
         // make sure bond depo is approved to spend this contracts "principal"
         _approveToken(_principal, depo, tokensBought);
