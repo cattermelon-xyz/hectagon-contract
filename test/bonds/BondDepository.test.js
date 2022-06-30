@@ -3,7 +3,7 @@ const { expect } = require("chai");
 const { smock } = require("@defi-wonderland/smock");
 const { BigNumber } = require("ethers");
 
-describe("Bond Depository", async () => {
+describe.only("Bond Depository", async () => {
     const LARGE_APPROVAL = "100000000000000000000000000000000";
     // Initial mint for Frax, HECTA and DAI (10,000,000)
     const initialMint = "10000000000000000000000000";
@@ -36,9 +36,10 @@ describe("Bond Depository", async () => {
     let depositInterval = 60 * 60 * 4;
     let tuneInterval = 60 * 60;
 
-    let refReward = 500;
-    let buyerReward = 100;
-    let daoReward = 50;
+    let refPrecent = 500;
+    let buyerPrecent = 100;
+    let daoInvestmentPercent = 10000;
+    let daoRewardPoolsPercent = 10000;
 
     var bid = 0;
     /**
@@ -57,7 +58,6 @@ describe("Bond Depository", async () => {
 
     beforeEach(async () => {
         dai = await erc20Factory.deploy("Dai", "DAI", 18);
-
         auth = await authFactory.deploy(
             deployer.address,
             deployer.address,
@@ -94,8 +94,8 @@ describe("Bond Depository", async () => {
         await hecta.connect(alice).approve(depository.address, LARGE_APPROVAL);
         await dai.connect(bob).approve(depository.address, LARGE_APPROVAL);
 
-        await depository.setDAORewards(daoReward);
-        await depository.setReferConfig(carol.address, refReward, buyerReward);
+        await depository.setDaoRewards(daoInvestmentPercent, daoRewardPoolsPercent);
+        await depository.setReferTerm(carol.address, refPrecent, buyerPrecent);
 
         await dai.connect(alice).approve(depository.address, capacity);
         const block = await ethers.provider.getBlock("latest");
@@ -319,16 +319,40 @@ describe("Bond Depository", async () => {
         expect(bobBalance).to.lessThan(Number(await gHECTA.balanceTo(expectedPayout * 1.0001)));
     });
 
-    it("cannot get rewards in vesting time", async () => {
+    describe("setReferTermCap", () => {
+        it("only called by governor", async () => {
+            await expect(depository.connect(alice).setReferTermCap("1000")).to.be.revertedWith(
+                "UNAUTHORIZED"
+            );
+        });
+
+        it("governor setRefer term cap correctlly", async () => {
+            const termCap = BigNumber.from("2000");
+            await depository.setReferTermCap(termCap);
+            const referTermCap = await depository.referTermCap();
+            expect(referTermCap).to.be.eq(termCap);
+        });
+    });
+
+    it("general users can NOT get rewards in vesting time", async () => {
         const block = await ethers.provider.getBlock("latest");
         const timestampBefore = block.timestamp;
 
         await depository.setRewardTime(timestampBefore + 1000);
-        expect(depository.getReward()).to.be.revertedWith("Cannot get reward in vesting time");
+        await expect(depository.connect(alice).getReward()).to.be.revertedWith("Cannot get reward in vesting time");
     });
 
-    it("users can get rewards after vesting time", async () => {
-        let daoBalance = await hecta.balanceOf(deployer.address);
+    it("DAO can get rewards in vesting time", async () => {
+        const block = await ethers.provider.getBlock("latest");
+        const timestampBefore = block.timestamp;
+
+        await depository.setRewardTime(timestampBefore + 1000);
+        await depository.getReward();
+        return true;
+    });
+
+    it("general users can get rewards after vesting time", async () => {
+        let deployerBalance = await hecta.balanceOf(deployer.address);
         const block = await ethers.provider.getBlock("latest");
         const timestampBefore = block.timestamp;
 
@@ -337,7 +361,7 @@ describe("Bond Depository", async () => {
         await depository.getReward();
 
         const frontendReward = Number(await hecta.balanceOf(deployer.address));
-        expect(frontendReward).to.be.eq(Number(daoBalance));
+        expect(frontendReward).to.be.eq(Number(deployerBalance));
     });
 
     it("should give correct rewards to referrer, dao and buyer", async () => {
@@ -350,18 +374,21 @@ describe("Bond Depository", async () => {
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
-        const payout = Number(finalPayout) / (1 + buyerReward / 1e4);
+        const payout = Number(finalPayout) / (1 + buyerPrecent / 1e4);
         // Mint hecta for depository to payout reward
         await hecta.mint(depository.address, "1000000000000000000000");
 
-        let daoExpected = Number(daoBalance) + Number((Number(payout) * daoReward) / 1e4);
-        await depository.getReward();
+        let daoExpected =
+            Number(daoBalance) +
+            Number((Number(payout) * daoInvestmentPercent) / 1e4) +
+            Number((Number(payout) * daoRewardPoolsPercent) / 1e4);
+        await depository.connect(deployer).getReward();
 
-        const frontendReward = Number(await hecta.balanceOf(deployer.address));
-        expect(frontendReward).to.be.greaterThan(Number(daoExpected));
-        expect(frontendReward).to.be.lessThan(Number(daoExpected) * 1.0001);
+        const daoFundBalance = Number(await hecta.balanceOf(deployer.address));
+        expect(daoFundBalance).to.be.greaterThan(Number(daoExpected));
+        expect(daoFundBalance).to.be.lessThan(Number(daoExpected) * 1.0001);
 
-        let refExpected = Number(refBalance) + Number((Number(payout) * refReward) / 1e4);
+        let refExpected = Number(refBalance) + Number((Number(payout) * refPrecent) / 1e4);
         await depository.connect(carol).getReward();
 
         const carolReward = Number(await hecta.balanceOf(carol.address));
@@ -369,22 +396,24 @@ describe("Bond Depository", async () => {
         expect(carolReward).to.be.lessThan(Number(refExpected) * 1.0001);
     });
 
-    describe('Partner buy bond', () => {
+    describe("Partner buy bond", () => {
         it("should give correct amount for partner: in case reward smaller than maxAmount", async () => {
-            const partnerMaxAmount = ethers.utils.parseUnits('100', 9);
+            const partnerMaxAmount = ethers.utils.parseUnits("100", 9);
             const partnerPercent = 1000; // 10%
             await depository.setPartnerTerm(partner.address, partnerMaxAmount, partnerPercent);
-            let amount = ethers.utils.parseEther('1');
+            let amount = ethers.utils.parseEther("1");
             const marketPrice = await depository.marketPrice(bid);
             const expectedPayout = amount.div(marketPrice);
 
-            const expectedFinalPayout = expectedPayout.add(expectedPayout.mul(partnerPercent).div(1e4));
+            const expectedFinalPayout = expectedPayout.add(
+                expectedPayout.mul(partnerPercent).div(1e4)
+            );
 
             let [finalPayout] = await depository
                 .connect(bob)
                 .callStatic.deposit(bid, amount, initialPrice, partner.address, partner.address);
             const payout = Number(finalPayout) / (1 + partnerPercent / 1e4);
-            const partnerReward = Math.floor(payout * partnerPercent / 1e4);
+            const partnerReward = Math.floor((payout * partnerPercent) / 1e4);
             const expectedPatnerRemainingAmount = partnerMaxAmount.sub(partnerReward);
             await depository
                 .connect(bob)
@@ -392,17 +421,21 @@ describe("Bond Depository", async () => {
             expect(expectedFinalPayout.toNumber()).to.greaterThanOrEqual(finalPayout.toNumber());
             expect(expectedFinalPayout.toNumber()).to.lessThan(finalPayout.toNumber() * 1.0001);
 
-            const [partnerRewardAmount] = await depository.partnerRewards(partner.address);
+            const [partnerRewardAmount] = await depository.partnerTerms(partner.address);
 
-            expect(expectedPatnerRemainingAmount.toNumber()).to.greaterThanOrEqual(partnerRewardAmount.toNumber());
-            expect(expectedPatnerRemainingAmount.toNumber()).to.lessThan(partnerRewardAmount.toNumber() * 1.01);
+            expect(expectedPatnerRemainingAmount.toNumber()).to.greaterThanOrEqual(
+                partnerRewardAmount.toNumber()
+            );
+            expect(expectedPatnerRemainingAmount.toNumber()).to.lessThan(
+                partnerRewardAmount.toNumber() * 1.01
+            );
         });
 
         it("should give correct amount for partner: in case reward larger than maxAmount", async () => {
-            const partnerMaxAmount = ethers.utils.parseUnits('1', 9);
+            const partnerMaxAmount = ethers.utils.parseUnits("1", 9);
             const partnerPercent = 1000; // 10%
             await depository.setPartnerTerm(partner.address, partnerMaxAmount, partnerPercent);
-            let amount = ethers.utils.parseEther('10000');
+            let amount = ethers.utils.parseEther("10000");
             const marketPrice = await depository.marketPrice(bid);
             const expectedPayout = amount.div(marketPrice);
 
@@ -416,10 +449,10 @@ describe("Bond Depository", async () => {
             expect(expectedFinalPayout.toNumber()).to.greaterThanOrEqual(finalPayout.toNumber());
             expect(expectedFinalPayout.toNumber()).to.lessThan(finalPayout.toNumber() * 1.001);
 
-            const [partnerRewardAmount] = await depository.partnerRewards(partner.address);
+            const [partnerRewardAmount] = await depository.partnerTerms(partner.address);
             expect(partnerRewardAmount.toNumber()).to.be.eq(0);
         });
-    })
+    });
 
     it("should decay a max payout in target deposit interval", async () => {
         let [, , , , , maxPayout, ,] = await depository.markets(bid);
