@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "../interfaces/ITreasury.sol";
+import "../interfaces/IHectaCirculatingSupply.sol";
 
 contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
     using Counters for Counters.Counter;
@@ -20,6 +21,7 @@ contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
     address public hectaAddress;
     address public treasuryAddress;
     address public busdAddress;
+    IHectaCirculatingSupply public circulatingHectaContract;
 
     uint256 public startTimestamp;
     bool public useWhiteList;
@@ -94,11 +96,13 @@ contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
     function initialize(
         address hectaAddress_,
         address treasuryAddress_,
-        address busdAddress_
+        address busdAddress_,
+        IHectaCirculatingSupply circulatingHectaContract_
     ) external onlyOwner {
         hectaAddress = hectaAddress_;
         treasuryAddress = treasuryAddress_;
         busdAddress = busdAddress_;
+        circulatingHectaContract = circulatingHectaContract_;
         IERC20(busdAddress).approve(treasuryAddress, 1e33);
     }
 
@@ -216,7 +220,11 @@ contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
         Space memory currentSpace = spaces[spaceCounter.current()];
         if (startTimestamp > 0 && block.timestamp - currentSpace.startedTime > spaceLength) {
             spaceCounter.increment();
-            spaces[spaceCounter.current()] = Space(IERC20(hectaAddress).totalSupply(), totalSupply(), block.timestamp);
+            spaces[spaceCounter.current()] = Space(
+                circulatingHectaContract.circulatingSupply(),
+                totalSupply(),
+                block.timestamp
+            );
         }
     }
 
@@ -242,7 +250,11 @@ contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
         }
 
         if (block.timestamp - currentSpace.startedTime > spaceLength) {
-            Space memory newSpace = Space(IERC20(hectaAddress).totalSupply(), totalSupply(), block.timestamp);
+            Space memory newSpace = Space(
+                circulatingHectaContract.circulatingSupply(),
+                totalSupply(),
+                block.timestamp
+            );
 
             currentSpaceProfit =
                 ((((newSpace.totalHecta - spaces[_spaceCount].totalHecta) * RATE_NUMERATOR) / RATE_DENOMINATOR) *

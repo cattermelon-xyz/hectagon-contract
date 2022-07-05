@@ -10,7 +10,7 @@ export const CONTRACTS: Record<string, string> = {
     bondingCalculator: "HectagonBondingCalculator",
     authority: "HectagonAuthority",
     migrator: "HectagonTokenMigrator",
-    circulatingSupply: "HectaCirculatingSupplyConrtact",
+    circulatingSupply: "HectaCirculatingSupply",
     redeemHelper: "RedeemHelper",
 };
 

@@ -9,6 +9,7 @@ import "./interfaces/ITreasury.sol";
 import "./interfaces/IDistributor.sol";
 
 import "./types/HectagonAccessControlled.sol";
+import "./interfaces/IHectaCirculatingSupply.sol";
 
 contract Distributor is IDistributor, HectagonAccessControlled {
     /* ========== DEPENDENCIES ========== */
@@ -17,10 +18,9 @@ contract Distributor is IDistributor, HectagonAccessControlled {
     using SafeERC20 for IERC20;
 
     /* ====== VARIABLES ====== */
-
-    IERC20 private immutable hecta;
     ITreasury private immutable treasury;
     address private immutable staking;
+    IHectaCirculatingSupply public circulatingHectaContract;
 
     mapping(uint256 => Adjust) public adjustments;
     uint256 public override bounty;
@@ -45,16 +45,16 @@ contract Distributor is IDistributor, HectagonAccessControlled {
 
     constructor(
         address _treasury,
-        address _hecta,
         address _staking,
-        address _authority
+        address _authority,
+        address circulatingHectaContract_
     ) HectagonAccessControlled(IHectagonAuthority(_authority)) {
         require(_treasury != address(0), "Zero address: Treasury");
         treasury = ITreasury(_treasury);
-        require(_hecta != address(0), "Zero address: hecta");
-        hecta = IERC20(_hecta);
         require(_staking != address(0), "Zero address: Staking");
         staking = _staking;
+        require(circulatingHectaContract_ != address(0), "Zero address: circulatingHectaContract");
+        circulatingHectaContract = IHectaCirculatingSupply(circulatingHectaContract_);
     }
 
     /* ====== PUBLIC FUNCTIONS ====== */
@@ -125,7 +125,7 @@ contract Distributor is IDistributor, HectagonAccessControlled {
         @return uint
      */
     function nextRewardAt(uint256 _rate) public view override returns (uint256) {
-        return hecta.totalSupply().mul(_rate).div(rateDenominator);
+        return circulatingHectaContract.circulatingSupply().mul(_rate).div(rateDenominator);
     }
 
     /**

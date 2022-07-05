@@ -26,7 +26,7 @@ chai.use(smock.matchers);
 
 describe("HectagonQuickBond", () => {
     const largeAmount = BigNumber.from("1000000000000000000000000000"); // 1 billions
-    
+
     // bsc mainnet
     const swapFactoryAddress = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73";
     const swapRouterAddress = "0x10ED43C718714eb63d5aA57B78B54704E256024E";
@@ -284,7 +284,7 @@ describe("HectagonQuickBond", () => {
             bondDepositoryFake.deposit
                 .whenCalledWith(
                     0,
-                    '353022732780419',
+                    "353022732780419",
                     hectaBusdPriceInHecta,
                     owner.address, // depositor
                     owner.address
@@ -361,8 +361,7 @@ describe("HectagonQuickBond", () => {
                 "0"
             );
 
-            await expect(tx)
-                .to.revertedWith("High Slippage")
+            await expect(tx).to.revertedWith("High Slippage");
         });
 
         it("bond with Cake (or any ECR20 token) to get HECTA-BUSD bond", async () => {
@@ -401,7 +400,7 @@ describe("HectagonQuickBond", () => {
             bondDepositoryFake.deposit
                 .whenCalledWith(
                     0,
-                    '3478931502289142',
+                    "3478931502289142",
                     hectaBusdPriceInHecta,
                     owner.address, // depositor
                     owner.address
@@ -461,7 +460,7 @@ describe("HectagonQuickBond", () => {
             bondDepositoryFake.deposit
                 .whenCalledWith(
                     0,
-                    '158550948234515669',
+                    "158550948234515669",
                     hectaBusdPriceInHecta,
                     owner.address, // depositor
                     owner.address
@@ -496,8 +495,8 @@ describe("HectagonQuickBond", () => {
 
         const premintHecta = BigNumber.from("100000000000000"); // 100000 Hecta
 
-        const hectaPriceInBusd: BigNumber = busdToAddLiquidity.div(hectaToAddLiquidity)
-    
+        const hectaPriceInBusd: BigNumber = busdToAddLiquidity.div(hectaToAddLiquidity);
+
         beforeEach(async () => {
             cake = await new MockERC20__factory(owner).deploy("Cake", "CAKE", 18);
             busd = await new MockERC20__factory(owner).deploy("BUSD", "BUSD", 18);
@@ -562,7 +561,7 @@ describe("HectagonQuickBond", () => {
                     timestampBefore + 10
                 ),
             ]);
-            
+
             await quickBond.updateDepo(bondDepositoryFake.address);
         });
 
@@ -577,7 +576,7 @@ describe("HectagonQuickBond", () => {
                     false,
                     owner.address,
                     0,
-                    0,
+                    0
                 )
             ).to.be.revertedWith("No BNB sent");
         });
@@ -592,7 +591,7 @@ describe("HectagonQuickBond", () => {
                     false,
                     owner.address,
                     0,
-                    0,
+                    0
                 )
             ).to.be.revertedWith("Invalid token amount");
         });
@@ -622,7 +621,6 @@ describe("HectagonQuickBond", () => {
                 cakeToAddLiquidity,
                 busdToAddLiquidity
             );
-            
 
             bondDepositoryFake.deposit
                 .whenCalledWith(
@@ -668,17 +666,17 @@ describe("HectagonQuickBond", () => {
                 )
                 .returns([10, 0, 0]);
 
-                const tx = quickBond.quickStableBond(
-                    ZERO_ADDRESS,
-                    busd.address,
-                    [cake.address, busd.address],
-                    coinSwapAmount,
-                    false,
-                    owner.address,
-                    hectaPriceInBusd,
-                    0,
-                    {value: coinSwapAmount}
-                );
+            const tx = quickBond.quickStableBond(
+                ZERO_ADDRESS,
+                busd.address,
+                [cake.address, busd.address],
+                coinSwapAmount,
+                false,
+                owner.address,
+                hectaPriceInBusd,
+                0,
+                { value: coinSwapAmount }
+            );
 
             await expect(tx)
                 .to.emit(quickBond, "QuickBond")
