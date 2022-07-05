@@ -55,8 +55,8 @@ const config: HardhatUserConfig = {
             chainId: chainIds.hardhat,
             gas: 6000000,
             accounts: {
-                accountsBalance: "10000000000000000000000000"
-            }
+                accountsBalance: "10000000000000000000000000",
+            },
         },
         // mainnet: getChainConfig("mainnet"),
         ropsten: getChainConfig("ropsten"),
@@ -160,8 +160,8 @@ const config: HardhatUserConfig = {
         apiKey: process.env.ETHERSCAN_API_KEY,
     },
     mocha: {
-        timeout: 80000
-    }
+        timeout: 80000,
+    },
 };
 
 export default config;
