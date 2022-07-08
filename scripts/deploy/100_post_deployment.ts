@@ -40,10 +40,8 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     console.log("Authority push vault treasury");
 
     // Step 2: Set distributor as minter on treasury
-    await waitFor(treasury.enable(8, distributor.address, ethers.constants.AddressZero)); // Allows distributor to mint hecta.
+    await waitFor(treasury.enable(1, distributor.address)); // Allows distributor to mint hecta.
     console.log("Setup -- treasury.enable(8):  distributor enabled to mint hecta on treasury");
-    await waitFor(treasury.enable(9, sHecta.address, ethers.constants.AddressZero));
-    console.log("Setup -- treasury.enable(9):  sHecta on treasury");
 
     // Step 3: Set distributor on staking
     await waitFor(staking.setDistributor(distributor.address));

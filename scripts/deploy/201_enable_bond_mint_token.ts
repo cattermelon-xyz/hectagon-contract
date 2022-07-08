@@ -14,7 +14,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     const treasuryDeployment = await deployments.get(CONTRACTS.treasury);
     const treasury = HectagonTreasury__factory.connect(treasuryDeployment.address, signer);
 
-    await waitFor(treasury.enable(8, bondDepoDeployment.address, ethers.constants.AddressZero)); // Allows bondDepo to mint hecta.
+    await waitFor(treasury.enable(1, bondDepoDeployment.address)); // Allows bondDepo to mint hecta.
     console.log("Allows bondDepo to mint hecta.");
 };
 

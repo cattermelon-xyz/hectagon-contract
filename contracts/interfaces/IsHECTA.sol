@@ -17,12 +17,4 @@ interface IsHECTA is IERC20 {
     function toG(uint256 amount) external view returns (uint256);
 
     function fromG(uint256 amount) external view returns (uint256);
-
-    function changeDebt(
-        uint256 amount,
-        address debtor,
-        bool add
-    ) external;
-
-    function debtBalances(address _address) external view returns (uint256);
 }

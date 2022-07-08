@@ -84,9 +84,7 @@ describe("Bond Depository", async () => {
 
         await dai.mint(deployer.address, initialDeposit);
         await dai.approve(treasury.address, initialDeposit);
-        //await treasury.deposit(initialDeposit, dai.address, "10000000000000");
         await hecta.mint(deployer.address, "10000000000000");
-        await treasury.baseSupply.returns(await hecta.totalSupply());
 
         // Mint enough gHECTA to payout rewards
         await gHECTA.mint(depository.address, "1000000000000000000000");

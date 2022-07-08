@@ -248,7 +248,7 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
             uint256 targetDebt = (capacity * meta.length) / timeRemaining;
 
             // derive a new control variable from the target debt and current supply
-            uint64 newControlVariable = uint64((price * treasury.baseSupply()) / targetDebt);
+            uint64 newControlVariable = uint64((price * hecta.totalSupply()) / targetDebt);
 
             emit Tuned(_id, terms[_id].controlVariable, newControlVariable);
 
@@ -324,7 +324,7 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
          * debt ratio = total debt / supply
          * therefore, control variable = price / debt ratio
          */
-        uint256 controlVariable = (_market[1] * treasury.baseSupply()) / targetDebt;
+        uint256 controlVariable = (_market[1] * hecta.totalSupply()) / targetDebt;
 
         // depositing into, or getting info for, the created market uses this ID
         id_ = markets.length;
@@ -431,7 +431,7 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
      * @return             debt ratio for market in quote decimals
      */
     function debtRatio(uint256 _id) public view override returns (uint256) {
-        return (currentDebt(_id) * (10**metadata[_id].quoteDecimals)) / treasury.baseSupply();
+        return (currentDebt(_id) * (10**metadata[_id].quoteDecimals)) / hecta.totalSupply();
     }
 
     /**
@@ -540,7 +540,7 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
      * @return                  current debt for market in quote decimals
      */
     function _debtRatio(uint256 _id) internal view returns (uint256) {
-        return (markets[_id].totalDebt * (10**metadata[_id].quoteDecimals)) / treasury.baseSupply();
+        return (markets[_id].totalDebt * (10**metadata[_id].quoteDecimals)) / hecta.totalSupply();
     }
 
     /**

@@ -8,7 +8,6 @@ export const CONTRACTS: Record<string, string> = {
     distributor: "Distributor",
     treasury: "HectagonTreasury",
     bondDepo: "HectagonBondDepositoryV2",
-    bondingCalculator: "HectagonBondingCalculator",
     authority: "HectagonAuthority",
     migrator: "HectagonTokenMigrator",
     circulatingSupply: "HectaCirculatingSupply",
@@ -20,9 +19,6 @@ export const ADDRESSES: Record<string, string> = {
     busd: "0x9e3F47234e72e222348552e028ceEB8f4C428d26",
     treasury: "0x4250EA413cB2fD4A8fDc5cC73283d0070a52FB91",
 };
-
-// Constructor Arguments
-export const TREASURY_TIMELOCK = 0;
 
 export const LARGE_APPROVAL = "100000000000000000000000000000000";
 

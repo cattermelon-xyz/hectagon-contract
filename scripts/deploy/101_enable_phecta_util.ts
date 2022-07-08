@@ -18,7 +18,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     const hectaDeployment = await deployments.get(CONTRACTS.hecta);
     const circulatingSupplyDeployment = await deployments.get(CONTRACTS.circulatingSupply);
 
-    await waitFor(treasury.enable("0", pHectaDeployment.address, ethers.constants.AddressZero)); // Allows pHecta to deposit busd.
+    await waitFor(treasury.enable("1", pHectaDeployment.address)); // Allows pHecta to deposit busd.
     await waitFor(
         pHecta.initialize(
             hectaDeployment.address,

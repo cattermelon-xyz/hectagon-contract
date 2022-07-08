@@ -173,12 +173,12 @@ contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
         _burn(msg.sender, amount_);
         holders[msg.sender].claimed += amount_;
 
-        IERC20(busdAddress).safeTransferFrom(msg.sender, address(this), busdAmount);
-
-        uint256 hectaToSend = ITreasury(treasuryAddress).deposit(busdAmount, busdAddress, 0);
+        IERC20(busdAddress).safeTransferFrom(msg.sender, treasuryAddress, busdAmount);
 
         // the new note is pushed to the user's array
-        notes[msg.sender].push(Note({claimableAt: block.timestamp + vestingLength, claimedAt: 0, amount: hectaToSend}));
+        notes[msg.sender].push(Note({claimableAt: block.timestamp + vestingLength, claimedAt: 0, amount: amount_}));
+
+        ITreasury(treasuryAddress).mint(address(this), amount_);
 
         emit Exercise(msg.sender, amount_);
     }
@@ -263,11 +263,7 @@ contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
         }
 
         if (block.timestamp - currentSpace.startedTime > spaceLength) {
-            Space memory newSpace = Space(
-                circulatingHectaContract.circulatingSupply(),
-                totalSupply(),
-                block.timestamp
-            );
+            Space memory newSpace = Space(circulatingHectaContract.circulatingSupply(), totalSupply(), block.timestamp);
 
             currentSpaceProfit =
                 ((((newSpace.totalHecta - spaces[_spaceCount].totalHecta) * RATE_NUMERATOR) / RATE_DENOMINATOR) *
