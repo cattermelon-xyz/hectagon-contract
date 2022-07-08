@@ -3,6 +3,7 @@ export const CONTRACTS: Record<string, string> = {
     sHecta: "sHectagon",
     gHecta: "gHECTA",
     pHecta: "PHecta",
+    tHecta: "tHecta",
     staking: "HectagonStaking",
     distributor: "Distributor",
     treasury: "HectagonTreasury",
@@ -12,6 +13,7 @@ export const CONTRACTS: Record<string, string> = {
     migrator: "HectagonTokenMigrator",
     circulatingSupply: "HectaCirculatingSupply",
     redeemHelper: "RedeemHelper",
+    snapshot: "Snapshot",
 };
 
 export const ADDRESSES: Record<string, string> = {
