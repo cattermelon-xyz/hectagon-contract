@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { CONTRACTS, TREASURY_TIMELOCK } from "../constants";
+import { CONTRACTS } from "../constants";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     const { deployments, getNamedAccounts } = hre;
@@ -13,7 +13,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
     await deploy(CONTRACTS.treasury, {
         from: deployer,
-        args: [hectaDeployment.address, TREASURY_TIMELOCK, authorityDeployment.address],
+        args: [hectaDeployment.address, authorityDeployment.address],
         log: true,
         skipIfAlreadyDeployed: true,
     });

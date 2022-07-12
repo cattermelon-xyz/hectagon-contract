@@ -67,7 +67,6 @@ contract sHectagon is IsHECTA, ERC20Permit {
     mapping(address => mapping(address => uint256)) private _allowedValue;
 
     address public treasury;
-    mapping(address => uint256) public override debtBalances;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -178,7 +177,6 @@ contract sHectagon is IsHECTA, ERC20Permit {
         _gonBalances[msg.sender] = _gonBalances[msg.sender].sub(gonValue);
         _gonBalances[to] = _gonBalances[to].add(gonValue);
 
-        require(balanceOf(msg.sender) >= debtBalances[msg.sender], "Debt: cannot transfer amount");
         emit Transfer(msg.sender, to, value);
         return true;
     }
@@ -195,7 +193,6 @@ contract sHectagon is IsHECTA, ERC20Permit {
         _gonBalances[from] = _gonBalances[from].sub(gonValue);
         _gonBalances[to] = _gonBalances[to].add(gonValue);
 
-        require(balanceOf(from) >= debtBalances[from], "Debt: cannot transfer amount");
         emit Transfer(from, to, value);
         return true;
     }
@@ -218,23 +215,6 @@ contract sHectagon is IsHECTA, ERC20Permit {
             _approve(msg.sender, spender, oldValue.sub(subtractedValue));
         }
         return true;
-    }
-
-    // this function is called by the treasury, and informs sHECTA of changes to debt.
-    // note that addresses with debt balances cannot transfer collateralized sHECTA
-    // until the debt has been repaid.
-    function changeDebt(
-        uint256 amount,
-        address debtor,
-        bool add
-    ) external override {
-        require(msg.sender == treasury, "Only treasury");
-        if (add) {
-            debtBalances[debtor] = debtBalances[debtor].add(amount);
-        } else {
-            debtBalances[debtor] = debtBalances[debtor].sub(amount);
-        }
-        require(debtBalances[debtor] <= balanceOf(debtor), "sHECTA: insufficient balance");
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */
