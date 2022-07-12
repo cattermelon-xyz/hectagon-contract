@@ -28,8 +28,8 @@ abstract contract FrontEndRewarder is HectagonAccessControlled {
     mapping(address => PartnerTerm) public partnerTerms; // reward term for each partner
     mapping(address => ReferTerm) public referTerms; // reward term for refer
 
-    uint256 public referTermCap = 1000; // % cap for referrer (3 decimals: 1000 = 10%)
-    uint256 public rewardTime; // cannot get rewards before that time
+    uint256 public referTermCap = 2000; // % cap for referrer (3 decimals: 2000 = 20%)
+    uint256 public partnerTermCap = 10000; // % cap for partner (3 decimals: 10000 = 100%)
 
     uint256 public daoInvestmentAmount; //  cumulative amount in hecta
     uint256 public daoInvestmentPercent = 10000; // 3 decimals: 10000 = 100%
@@ -49,9 +49,6 @@ abstract contract FrontEndRewarder is HectagonAccessControlled {
 
     // pay reward to referrer
     function getReward() external {
-        if (authority.guardian() != msg.sender) {
-            require(block.timestamp >= rewardTime, "Cannot get reward in vesting time");
-        }
         uint256 reward = rewards[msg.sender];
 
         rewards[msg.sender] = 0;
@@ -122,10 +119,10 @@ abstract contract FrontEndRewarder is HectagonAccessControlled {
     }
 
     /**
-     * @notice set rewardTime for DAO
+     * @notice set Cap for referrer % reward
      */
-    function setRewardTime(uint256 _time) external onlyGovernor {
-        rewardTime = _time;
+    function setPartnerTermCap(uint256 _cap) external onlyGovernor {
+        partnerTermCap = _cap;
     }
 
     function setDaoRewards(uint256 daoInvestmentPercent_, uint256 daoCommunityPercent_) external onlyGovernor {
@@ -141,6 +138,7 @@ abstract contract FrontEndRewarder is HectagonAccessControlled {
         uint256 _referrerPercent,
         uint256 _buyerPercent
     ) external onlyPolicy {
+        require(_referrer != address(0), "Zero address: Referrer");
         require((_referrerPercent + _buyerPercent) <= referTermCap, "reward too high");
         referTerms[_referrer] = ReferTerm({referrerPercent: _referrerPercent, buyerPercent: _buyerPercent});
     }
@@ -154,6 +152,7 @@ abstract contract FrontEndRewarder is HectagonAccessControlled {
         uint256 _percent
     ) external onlyPolicy {
         require(_partner != address(0), "Zero address: Partner");
+        require(_percent <= partnerTermCap, "reward too high");
         partnerTerms[_partner] = PartnerTerm(_amount, _percent);
     }
 }

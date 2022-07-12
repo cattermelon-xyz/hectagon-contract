@@ -334,38 +334,6 @@ describe("Bond Depository", async () => {
         });
     });
 
-    it("general users can NOT get rewards in vesting time", async () => {
-        const block = await ethers.provider.getBlock("latest");
-        const timestampBefore = block.timestamp;
-
-        await depository.setRewardTime(timestampBefore + 1000);
-        await expect(depository.connect(alice).getReward()).to.be.revertedWith(
-            "Cannot get reward in vesting time"
-        );
-    });
-
-    it("DAO can get rewards in vesting time", async () => {
-        const block = await ethers.provider.getBlock("latest");
-        const timestampBefore = block.timestamp;
-
-        await depository.setRewardTime(timestampBefore + 1000);
-        await depository.getReward();
-        return true;
-    });
-
-    it("general users can get rewards after vesting time", async () => {
-        let deployerBalance = await hecta.balanceOf(deployer.address);
-        const block = await ethers.provider.getBlock("latest");
-        const timestampBefore = block.timestamp;
-
-        await depository.setRewardTime(timestampBefore + 1000);
-        await network.provider.send("evm_increaseTime", [timestampBefore + 1000 + 10]);
-        await depository.getReward();
-
-        const frontendReward = Number(await hecta.balanceOf(deployer.address));
-        expect(frontendReward).to.be.eq(Number(deployerBalance));
-    });
-
     it("should give correct rewards to referrer, dao and buyer", async () => {
         let daoBalance = await hecta.balanceOf(deployer.address);
         let refBalance = await hecta.balanceOf(carol.address);
