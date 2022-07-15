@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity >=0.7.5;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0;
 
 import "../interfaces/IHectagonAuthority.sol";
 

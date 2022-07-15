@@ -31,7 +31,7 @@ describe("Private Hectagon", async () => {
     let treasury: HectagonTreasury;
     let circulatingSupplyConrtact: HectaCirculatingSupply;
 
-    const preminedtHecta = utils.parseUnits('30000', 9);
+    const preminedtHecta = utils.parseUnits("30000", 9);
     const RateDenominator = BigNumber.from(1000000);
     const MaxPHectaToExercise = BigNumber.from(100000);
     const premintedPHecta = utils.parseUnits("50000000", 9); // 50,000,000 token

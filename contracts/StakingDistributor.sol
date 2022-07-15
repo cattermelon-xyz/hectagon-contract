@@ -1,10 +1,8 @@
-// SPDX-License-Identifier: AGPL-3.0
-pragma solidity ^0.7.5;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0;
 
-import "./libraries/SafeERC20.sol";
-import "./libraries/SafeMath.sol";
-
-import "./interfaces/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./interfaces/ITreasury.sol";
 import "./interfaces/IDistributor.sol";
 
@@ -13,8 +11,6 @@ import "./interfaces/IHectaCirculatingSupply.sol";
 
 contract Distributor is IDistributor, HectagonAccessControlled {
     /* ========== DEPENDENCIES ========== */
-
-    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     /* ====== VARIABLES ====== */
@@ -93,7 +89,7 @@ contract Distributor is IDistributor, HectagonAccessControlled {
         if (adjustment.rate != 0) {
             if (adjustment.add) {
                 // if rate should increase
-                info[_index].rate = info[_index].rate.add(adjustment.rate); // raise rate
+                info[_index].rate = info[_index].rate + adjustment.rate; // raise rate
                 if (info[_index].rate >= adjustment.target) {
                     // if target met
                     adjustments[_index].rate = 0; // turn off adjustment
@@ -103,7 +99,7 @@ contract Distributor is IDistributor, HectagonAccessControlled {
                 // if rate should decrease
                 if (info[_index].rate > adjustment.rate) {
                     // protect from underflow
-                    info[_index].rate = info[_index].rate.sub(adjustment.rate); // lower rate
+                    info[_index].rate = info[_index].rate - adjustment.rate; // lower rate
                 } else {
                     info[_index].rate = 0;
                 }
@@ -125,7 +121,7 @@ contract Distributor is IDistributor, HectagonAccessControlled {
         @return uint
      */
     function nextRewardAt(uint256 _rate) public view override returns (uint256) {
-        return circulatingHectaContract.circulatingSupply().mul(_rate).div(rateDenominator);
+        return (circulatingHectaContract.circulatingSupply() * _rate) / rateDenominator;
     }
 
     /**
@@ -137,7 +133,7 @@ contract Distributor is IDistributor, HectagonAccessControlled {
         uint256 reward;
         for (uint256 i = 0; i < info.length; i++) {
             if (info[i].recipient == _recipient) {
-                reward = reward.add(nextRewardAt(info[i].rate));
+                reward = reward + nextRewardAt(info[i].rate);
             }
         }
         return reward;
@@ -199,7 +195,7 @@ contract Distributor is IDistributor, HectagonAccessControlled {
         require(info[_index].recipient != address(0), "Recipient does not exist");
 
         if (msg.sender == authority.guardian()) {
-            require(_rate <= info[_index].rate.mul(25).div(1000), "Limiter: cannot adjust by >2.5%");
+            require(_rate <= (info[_index].rate * 25) / 1000, "Limiter: cannot adjust by >2.5%");
         }
 
         if (!_add) {

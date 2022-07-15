@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "./types/NoteKeeper.sol";
-import "./libraries/SafeERC20.sol";
-import "./interfaces/IERC20Metadata.sol";
 import "./interfaces/IBondDepository.sol";
 
 /// @title Hectagon Bond Depository V2

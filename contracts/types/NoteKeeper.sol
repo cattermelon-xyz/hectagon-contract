@@ -1,8 +1,7 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
 import "../types/FrontEndRewarder.sol";
-
 import "../interfaces/IgHECTA.sol";
 import "../interfaces/IStaking.sol";
 import "../interfaces/ITreasury.sol";
