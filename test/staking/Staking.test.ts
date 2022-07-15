@@ -188,10 +188,8 @@ describe("HectagonStaking", () => {
 
         describe("stake", () => {
             it("adds amount to the warmup when claim is false, regardless of rebasing", async () => {
-                // when _claim is false, the _rebasing flag is taken into account on the claim method
                 const amount = 1000;
                 const gons = 10;
-                const rebasing = true;
                 const claim = false;
 
                 hectaFake.transferFrom
@@ -200,7 +198,7 @@ describe("HectagonStaking", () => {
                 sHECTAFake.gonsForBalance.whenCalledWith(amount).returns(gons);
                 sHECTAFake.balanceForGons.whenCalledWith(gons).returns(amount);
 
-                await staking.connect(alice).stake(alice.address, amount, rebasing, claim);
+                await staking.connect(alice).stake(alice.address, amount, claim);
 
                 expect(await staking.supplyInWarmup()).to.equal(amount);
                 expect(await staking.warmupPeriod()).to.equal(0);
@@ -212,27 +210,9 @@ describe("HectagonStaking", () => {
                 expect(warmupInfo.lock).to.equal(false);
             });
 
-            it("exchanges HECTA for sHECTA when claim is true and rebasing is true", async () => {
-                const amount = 1000;
-                const rebasing = true;
-                const claim = true;
-
-                hectaFake.transferFrom
-                    .whenCalledWith(alice.address, staking.address, amount)
-                    .returns(true);
-                sHECTAFake.transfer.whenCalledWith(alice.address, amount).returns(true);
-
-                await staking.connect(alice).stake(alice.address, amount, rebasing, claim);
-
-                // nothing is in warmup
-                sHECTAFake.balanceForGons.whenCalledWith(0).returns(0);
-                expect(await staking.supplyInWarmup()).to.equal(0);
-            });
-
-            it("exchanges HECTA for newly minted gHECTA when claim is true and rebasing is true", async () => {
+            it("exchanges HECTA for newly minted gHECTA", async () => {
                 const amount = 1000;
                 const indexedAmount = 10000;
-                const rebasing = false;
                 const claim = true;
 
                 hectaFake.transferFrom
@@ -240,12 +220,12 @@ describe("HectagonStaking", () => {
                     .returns(true);
                 gHECTAFake.balanceTo.whenCalledWith(amount).returns(indexedAmount);
 
-                await staking.connect(alice).stake(alice.address, amount, rebasing, claim);
+                await staking.connect(alice).stake(alice.address, amount, claim);
 
                 expect(gHECTAFake.mint).to.be.calledWith(alice.address, indexedAmount);
             });
 
-            it("adds amount to warmup when claim is true and warmup period > 0, regardless of rebasing", async () => {
+            it("adds amount to warmup when claim is true and warmup period > 0", async () => {
                 // the rebasing flag is taken into account in the claim method
                 const amount = 1000;
                 const gons = 10;
@@ -257,7 +237,7 @@ describe("HectagonStaking", () => {
                 sHECTAFake.balanceForGons.whenCalledWith(gons).returns(amount);
 
                 await staking.connect(governor).setWarmupLength(1);
-                await staking.connect(alice).stake(alice.address, amount, true, true);
+                await staking.connect(alice).stake(alice.address, amount, true);
 
                 expect(await staking.supplyInWarmup()).to.equal(amount);
                 const warmupInfo = await staking.warmupInfo(alice.address);
@@ -271,7 +251,6 @@ describe("HectagonStaking", () => {
             it("disables external deposits when locked", async () => {
                 const amount = 1000;
                 const gons = 10;
-                const rebasing = false;
                 const claim = false;
 
                 hectaFake.transferFrom
@@ -282,14 +261,13 @@ describe("HectagonStaking", () => {
                 await staking.connect(alice).toggleLock();
 
                 await expect(
-                    staking.connect(alice).stake(bob.address, amount, rebasing, claim)
+                    staking.connect(alice).stake(bob.address, amount, claim)
                 ).to.be.revertedWith("External deposits for account are locked");
             });
 
             it("allows self deposits when locked", async () => {
                 const amount = 1000;
                 const gons = 10;
-                const rebasing = false;
                 const claim = false;
 
                 hectaFake.transferFrom
@@ -300,7 +278,7 @@ describe("HectagonStaking", () => {
 
                 await staking.connect(alice).toggleLock();
 
-                await staking.connect(alice).stake(alice.address, amount, rebasing, claim);
+                await staking.connect(alice).stake(alice.address, amount, claim);
 
                 expect(await staking.supplyInWarmup()).to.equal(amount);
             });
@@ -308,30 +286,15 @@ describe("HectagonStaking", () => {
 
         describe("claim", () => {
             async function createClaim(wallet: SignerWithAddress, amount: number, gons: number) {
-                const rebasing = true;
                 const claim = false;
                 hectaFake.transferFrom
                     .whenCalledWith(alice.address, staking.address, amount)
                     .returns(true);
                 sHECTAFake.gonsForBalance.whenCalledWith(amount).returns(gons);
-                await staking.connect(wallet).stake(wallet.address, amount, rebasing, claim);
+                await staking.connect(wallet).stake(wallet.address, amount, claim);
             }
 
-            it("transfers sHECTA when rebasing is true", async () => {
-                const amount = 1000;
-                const gons = 10;
-                await createClaim(alice, amount, gons);
-
-                sHECTAFake.transfer.whenCalledWith(alice.address, amount).returns(true);
-                sHECTAFake.balanceForGons.whenCalledWith(gons).returns(amount);
-
-                await staking.connect(alice).claim(alice.address, true);
-
-                sHECTAFake.balanceForGons.whenCalledWith(0).returns(0);
-                expect(await staking.supplyInWarmup()).to.equal(0);
-            });
-
-            it("mints gHECTA when rebasing is false", async () => {
+            it("mints gHECTA", async () => {
                 const indexedAmount = 10000;
                 const amount = 1000;
                 const gons = 10;
@@ -340,7 +303,7 @@ describe("HectagonStaking", () => {
                 gHECTAFake.balanceTo.whenCalledWith(amount).returns(indexedAmount);
                 sHECTAFake.balanceForGons.whenCalledWith(gons).returns(amount);
 
-                await staking.connect(alice).claim(alice.address, false);
+                await staking.connect(alice).claim(alice.address);
 
                 expect(gHECTAFake.mint).to.be.calledWith(alice.address, indexedAmount);
 
@@ -354,7 +317,7 @@ describe("HectagonStaking", () => {
                 await createClaim(alice, amount, gons);
                 await staking.connect(alice).toggleLock();
 
-                await expect(staking.connect(alice).claim(bob.address, false)).to.be.revertedWith(
+                await expect(staking.connect(alice).claim(bob.address)).to.be.revertedWith(
                     "External claims for account are locked"
                 );
             });
@@ -368,14 +331,14 @@ describe("HectagonStaking", () => {
                 sHECTAFake.transfer.whenCalledWith(alice.address, amount).returns(true);
                 sHECTAFake.balanceForGons.whenCalledWith(gons).returns(amount);
 
-                await staking.connect(alice).claim(alice.address, true);
+                await staking.connect(alice).claim(alice.address);
 
                 sHECTAFake.balanceForGons.whenCalledWith(0).returns(0);
                 expect(await staking.supplyInWarmup()).to.equal(0);
             });
 
             it("does nothing when there is nothing to claim", async () => {
-                await staking.connect(bob).claim(bob.address, true);
+                await staking.connect(bob).claim(bob.address);
 
                 expect(sHECTAFake.transfer).to.not.have.been.called;
                 expect(gHECTAFake.mint).to.not.have.been.called;
@@ -385,7 +348,7 @@ describe("HectagonStaking", () => {
                 await staking.connect(governor).setWarmupLength(2);
                 await createClaim(alice, 1000, 10);
 
-                await staking.connect(alice).claim(alice.address, true);
+                await staking.connect(alice).claim(alice.address);
 
                 expect(sHECTAFake.transfer).to.not.have.been.called;
                 expect(gHECTAFake.mint).to.not.have.been.called;
@@ -400,14 +363,13 @@ describe("HectagonStaking", () => {
                 // alice has a claim
                 amount = 1000;
                 gons = 10;
-                const rebasing = true;
                 const claim = false;
                 hectaFake.transferFrom
                     .whenCalledWith(alice.address, staking.address, amount)
                     .returns(true);
                 sHECTAFake.gonsForBalance.whenCalledWith(amount).returns(gons);
 
-                await staking.connect(alice).stake(alice.address, amount, rebasing, claim);
+                await staking.connect(alice).stake(alice.address, amount, claim);
             });
 
             it("removes stake from warmup and returns HECTA", async () => {
@@ -431,78 +393,21 @@ describe("HectagonStaking", () => {
         });
 
         describe("unstake", () => {
-            it("can redeem sHECTA for HECTA", async () => {
-                const amount = 1000;
-                const rebasing = true;
-                const claim = true;
-
-                hectaFake.transferFrom.returns(true);
-                hectaFake.balanceOf.returns(amount);
-                sHECTAFake.transfer.returns(true);
-                await staking.connect(alice).stake(alice.address, amount, rebasing, claim);
-
-                sHECTAFake.transferFrom.returns(true);
-                hectaFake.transfer.returns(true);
-                await staking.connect(alice).unstake(alice.address, amount, false, rebasing);
-
-                expect(sHECTAFake.transferFrom).to.be.calledWith(
-                    alice.address,
-                    staking.address,
-                    amount
-                );
-                expect(hectaFake.transfer).to.be.calledWith(alice.address, amount);
-            });
-
             it("can redeem gHECTA for HECTA", async () => {
                 const amount = 1000;
                 const indexedAmount = 10000;
-                const rebasing = false;
                 const claim = true;
 
                 hectaFake.transferFrom.returns(true);
-                await staking.connect(alice).stake(alice.address, amount, rebasing, claim);
+                await staking.connect(alice).stake(alice.address, amount, claim);
 
                 gHECTAFake.balanceFrom.whenCalledWith(indexedAmount).returns(amount);
                 hectaFake.transfer.returns(true);
                 hectaFake.balanceOf.returns(amount);
-                await staking.connect(alice).unstake(alice.address, indexedAmount, false, rebasing);
+                await staking.connect(alice).unstake(alice.address, indexedAmount, false);
 
                 expect(hectaFake.transfer).to.be.calledWith(alice.address, amount);
                 expect(gHECTAFake.burn).to.be.calledWith(alice.address, indexedAmount);
-            });
-        });
-
-        describe("wrap", () => {
-            it("converts sHECTA into gHECTA", async () => {
-                const amount = 1000;
-                const indexedAmount = 10000;
-
-                gHECTAFake.balanceTo.whenCalledWith(amount).returns(indexedAmount);
-                sHECTAFake.transferFrom.returns(true);
-
-                await staking.connect(alice).wrap(alice.address, amount);
-
-                expect(gHECTAFake.mint).to.be.calledWith(alice.address, indexedAmount);
-                expect(sHECTAFake.transferFrom).to.be.calledWith(
-                    alice.address,
-                    staking.address,
-                    amount
-                );
-            });
-        });
-
-        describe("unwrap", () => {
-            it("converts gHECTA into sHECTA", async () => {
-                const amount = 1000;
-                const indexedAmount = 10000;
-
-                gHECTAFake.balanceFrom.whenCalledWith(indexedAmount).returns(amount);
-                sHECTAFake.transfer.returns(true);
-
-                await staking.connect(alice).unwrap(alice.address, indexedAmount);
-
-                expect(gHECTAFake.burn).to.be.calledWith(alice.address, indexedAmount);
-                expect(sHECTAFake.transfer).to.be.calledWith(alice.address, amount);
             });
         });
 

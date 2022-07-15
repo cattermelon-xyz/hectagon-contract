@@ -295,7 +295,7 @@ describe("Bond Depository", async () => {
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
-        await depository.connect(bob).redeemAll(bob.address, true);
+        await depository.connect(bob).redeemAll(bob.address);
         expect(await hecta.balanceOf(bob.address)).to.equal(balance);
     });
 
@@ -310,7 +310,7 @@ describe("Bond Depository", async () => {
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
 
         await network.provider.send("evm_increaseTime", [1000]);
-        await depository.redeemAll(bob.address, true);
+        await depository.redeemAll(bob.address);
 
         const bobBalance = Number(await gHECTA.balanceOf(bob.address));
         expect(bobBalance).to.greaterThanOrEqual(Number(await gHECTA.balanceTo(expectedPayout)));

@@ -5,11 +5,10 @@ interface IStaking {
     function stake(
         address _to,
         uint256 _amount,
-        bool _rebasing,
         bool _claim
     ) external returns (uint256);
 
-    function claim(address _recipient, bool _rebasing) external returns (uint256);
+    function claim(address _recipient) external returns (uint256);
 
     function forfeit() external returns (uint256);
 
@@ -18,8 +17,7 @@ interface IStaking {
     function unstake(
         address _to,
         uint256 _amount,
-        bool _trigger,
-        bool _rebasing
+        bool _trigger
     ) external returns (uint256);
 
     function wrap(address _to, uint256 _amount) external returns (uint256 gBalance_);

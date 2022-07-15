@@ -79,7 +79,7 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
         treasury.mint(address(this), finalPayout + give.toRefer);
 
         // note that only the buyer's final payout gets staked (referer commission are in HECTA)
-        staking.stake(address(this), finalPayout, false, true);
+        staking.stake(address(this), finalPayout, true);
 
         // mint Dao Community Fund and Dao Investment Fund, store in treasury
         treasury.mint(address(treasury), daoAmount);
@@ -93,13 +93,11 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
      * @notice             redeem notes for user
      * @param _user        the user to redeem for
      * @param _indexes     the note indexes to redeem
-     * @param _sendgHECTA    send payout as gHECTA or sHECTA
      * @return payout_     sum of payout sent, in gHECTA
      */
     function redeem(
         address _user,
-        uint256[] memory _indexes,
-        bool _sendgHECTA
+        uint256[] memory _indexes
     ) public override returns (uint256 payout_) {
         uint48 time = uint48(block.timestamp);
 
@@ -112,22 +110,17 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
             }
         }
 
-        if (_sendgHECTA) {
-            gHECTA.transfer(_user, payout_); // send payout as gHECTA
-        } else {
-            staking.unwrap(_user, payout_); // unwrap and send payout as sHECTA
-        }
+        gHECTA.transfer(_user, payout_); // send payout as gHECTA
     }
 
     /**
      * @notice             redeem all redeemable markets for user
      * @dev                if possible, query indexesFor() off-chain and input in redeem() to save gas
      * @param _user        user to redeem all notes for
-     * @param _sendgHECTA    send payout as gHECTA or sHECTA
      * @return             sum of payout sent, in gHECTA
      */
-    function redeemAll(address _user, bool _sendgHECTA) external override returns (uint256) {
-        return redeem(_user, indexesFor(_user), _sendgHECTA);
+    function redeemAll(address _user) external returns (uint256) {
+        return redeem(_user, indexesFor(_user));
     }
 
     /* ========== TRANSFER ========== */
