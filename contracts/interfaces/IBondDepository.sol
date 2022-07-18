@@ -49,6 +49,12 @@ interface IBondDepository {
         uint256 index;
     }
 
+    struct ControlDecay {
+        uint64 decay; // change in control variable
+        uint48 secondsSince; // seconds since last change in control variable
+        bool active; // whether or not change remains active
+    }
+
     /**
      * @notice deposit market
      * @param _bid uint256

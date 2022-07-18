@@ -7,7 +7,8 @@ import "../interfaces/IERC20.sol";
 abstract contract FrontEndRewarder is HectagonAccessControlled {
     struct Give {
         uint256 toRefer;
-        uint256 toDAO;
+        uint256 toDaoInvestment;
+        uint256 toDaoCommunity;
         uint256 toBuyer;
     }
 
@@ -31,10 +32,8 @@ abstract contract FrontEndRewarder is HectagonAccessControlled {
     uint256 public referTermCap = 2000; // % cap for referrer (3 decimals: 2000 = 20%)
     uint256 public partnerTermCap = 10000; // % cap for partner (3 decimals: 10000 = 100%)
 
-    uint256 public daoInvestmentAmount; //  cumulative amount in hecta
     uint256 public daoInvestmentPercent = 10000; // 3 decimals: 10000 = 100%
 
-    uint256 public daoCommunityAmount; //  cumulative amount in hecta
     uint256 public daoCommunityPercent = 45000; // 3 decimals: 45000 = 450%
 
     uint256 private immutable RATE_DENOMINATOR = 1e4;
@@ -58,33 +57,17 @@ abstract contract FrontEndRewarder is HectagonAccessControlled {
     /* ========= INTERNAL ========== */
 
     /**
-     * @notice              add new market payout to user data
-     * @return rewards_     total rewards
-     * @return finalPayout_ buyer final payout
-     * @return commission_  refers commission
+     * @notice          add new market payout to user data
+     * @return give     rewards data
      */
     function _giveRewards(
         uint256 _payout,
         address _referral,
         address _buyer
-    )
-        internal
-        returns (
-            uint256,
-            uint256,
-            uint256
-        )
-    {
-        // first we calculate rewards paid to the DAO and to the front end operator (referrer)
-        Give memory give;
-
-        give.toDAO += (_payout * daoInvestmentPercent) / RATE_DENOMINATOR;
-        daoInvestmentAmount += (_payout * daoInvestmentPercent) / RATE_DENOMINATOR;
-
-        give.toDAO += (_payout * daoCommunityPercent) / RATE_DENOMINATOR;
-        daoCommunityAmount += (_payout * daoCommunityPercent) / RATE_DENOMINATOR;
-
-        rewards[authority.guardian()] += give.toDAO;
+    ) internal returns (Give memory give) {
+        // first we calculate rewards paid to the DAO and referrer
+        give.toDaoInvestment += (_payout * daoInvestmentPercent) / RATE_DENOMINATOR;
+        give.toDaoCommunity += (_payout * daoCommunityPercent) / RATE_DENOMINATOR;
 
         // check partner logic
         if (partnerTerms[_buyer].percent > 0) {
@@ -108,7 +91,7 @@ abstract contract FrontEndRewarder is HectagonAccessControlled {
             }
         }
 
-        return (give.toDAO + give.toRefer + give.toBuyer, give.toBuyer + _payout, give.toRefer);
+        return give;
     }
 
     /**

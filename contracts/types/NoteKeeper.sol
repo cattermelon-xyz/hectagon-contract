@@ -47,8 +47,7 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
      * @param _payout       the amount of HECTA due to the user
      * @param _expiry       the timestamp when the Note is redeemable
      * @param _marketID     the ID of the market deposited into
-     * @return index_       the index of the Note in the user's array
-     * @return finalPayout_ the amount of gHECTA due
+     * @return give         rewards data
      */
     function addNote(
         address _user,
@@ -56,24 +55,19 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
         uint48 _expiry,
         uint48 _marketID,
         address _referral
-    )
-        internal
-        returns (
-            uint256,
-            uint256,
-            uint256
-        )
-    {
+    ) internal returns (uint256, Give memory) {
+        // front end operators can earn rewards by referring users
+        Give memory give = _giveRewards(_payout, _referral, _user); // Give struct inherited fom FrontEndRewarder
         // the index of the note is the next in the user's array
         uint256 index_ = notes[_user].length;
 
-        // front end operators can earn rewards by referring users
-        (uint256 rewards, uint256 finalPayout_, uint256 commission_) = _giveRewards(_payout, _referral, _user);
+        uint256 finalPayout = give.toBuyer + _payout;
+        uint256 daoAmount = give.toDaoCommunity + give.toDaoInvestment - give.toBuyer - give.toRefer;
 
         // the new note is pushed to the user's array
         notes[_user].push(
             Note({
-                payout: gHECTA.balanceTo(finalPayout_),
+                payout: gHECTA.balanceTo(finalPayout),
                 created: uint48(block.timestamp),
                 matured: _expiry,
                 redeemed: 0,
@@ -81,13 +75,16 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
             })
         );
 
-        // mint and stake payout
-        treasury.mint(address(this), rewards + _payout);
+        // mint buyer's final payout and referer commission
+        treasury.mint(address(this), finalPayout + give.toRefer);
 
-        // note that only the payout gets staked (front end rewards are in HECTA)
-        staking.stake(address(this), finalPayout_, false, true);
+        // note that only the buyer's final payout gets staked (referer commission are in HECTA)
+        staking.stake(address(this), finalPayout, false, true);
 
-        return (index_, finalPayout_, commission_);
+        // mint Dao Community Fund and Dao Investment Fund, store in treasury
+        treasury.mint(address(treasury), daoAmount);
+
+        return (index_, give);
     }
 
     /* ========== REDEEM ========== */

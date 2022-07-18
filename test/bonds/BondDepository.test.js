@@ -332,8 +332,7 @@ describe("Bond Depository", async () => {
         });
     });
 
-    it("should give correct rewards to referrer, dao and buyer", async () => {
-        let daoBalance = await hecta.balanceOf(deployer.address);
+    it("should give correct rewards to referrer, dao (treasury) and buyer", async () => {
         let refBalance = await hecta.balanceOf(carol.address);
         let amount = BigNumber.from("10000000000000000000000"); // 10,000
         let [finalPayout] = await depository
@@ -345,16 +344,6 @@ describe("Bond Depository", async () => {
         const payout = Number(finalPayout) / (1 + buyerPrecent / 1e4);
         // Mint hecta for depository to payout reward
         await hecta.mint(depository.address, "1000000000000000000000");
-
-        let daoExpected =
-            Number(daoBalance) +
-            Number((Number(payout) * daoInvestmentPercent) / 1e4) +
-            Number((Number(payout) * daoRewardPoolsPercent) / 1e4);
-        await depository.connect(deployer).getReward();
-
-        const daoFundBalance = Number(await hecta.balanceOf(deployer.address));
-        expect(daoFundBalance).to.be.greaterThan(Number(daoExpected));
-        expect(daoFundBalance).to.be.lessThan(Number(daoExpected) * 1.0001);
 
         let refExpected = Number(refBalance) + Number((Number(payout) * refPrecent) / 1e4);
         await depository.connect(carol).getReward();
@@ -451,5 +440,39 @@ describe("Bond Depository", async () => {
         await expect(
             depository.connect(bob).deposit(bid, 0, initialPrice, bob.address, carol.address)
         ).to.be.revertedWith("Depository: market concluded");
+    });
+
+    describe("totalPayout and payoutCap", () => {
+        it("governor can setPayoutCap correctlly", async () => {
+            const expectedOutput = ethers.utils.parseUnits("10", 9);
+            await depository.setPayoutCap(expectedOutput);
+            const payoutCap = await depository.payoutCap();
+            await expect(expectedOutput).to.be.eq(payoutCap);
+        });
+
+        it("user can't deposit when hit payoutCap", async () => {
+            const expectedOutput = ethers.utils.parseUnits("10", 9);
+            await depository.setPayoutCap(expectedOutput);
+            const amount = BigNumber.from("10000000000000000000000"); // 10,000
+            const tx = depository
+                .connect(bob)
+                .deposit(bid, amount, initialPrice, bob.address, carol.address);
+            await expect(tx).to.revertedWith("Depository: total payout hit payout cap");
+        });
+
+        it("totalPayout incre correct follow by payout amount", async () => {
+            const amount = BigNumber.from("10000000000000000000000"); // 10,000
+            const [finalPayout] = await depository
+                .connect(bob)
+                .callStatic.deposit(bid, amount, initialPrice, bob.address, carol.address);
+            await depository
+                .connect(bob)
+                .deposit(bid, amount, initialPrice, bob.address, carol.address);
+            const payout = Number(finalPayout) / (1 + buyerPrecent / 1e4);
+
+            const totalPayout = await depository.totalPayout();
+            expect(payout).to.be.greaterThan(Number(totalPayout) / 1.0001);
+            expect(payout).to.be.lessThan(Number(totalPayout) * 1.0001);
+        });
     });
 });
