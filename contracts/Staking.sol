@@ -82,19 +82,17 @@ contract HectagonStaking is HectagonAccessControlled {
      * @param _to address
      * @param _amount uint
      * @param _claim bool
-     * @param _rebasing bool
      * @return uint
      */
     function stake(
         address _to,
         uint256 _amount,
-        bool _rebasing,
         bool _claim
     ) external returns (uint256) {
         HECTA.safeTransferFrom(msg.sender, address(this), _amount);
         _amount = _amount.add(rebase()); // add bounty if rebase occurred
         if (_claim && warmupPeriod == 0) {
-            return _send(_to, _amount, _rebasing);
+            return _send(_to, _amount);
         } else {
             Claim memory info = warmupInfo[_to];
             if (!info.lock) {
@@ -117,10 +115,9 @@ contract HectagonStaking is HectagonAccessControlled {
     /**
      * @notice retrieve stake from warmup
      * @param _to address
-     * @param _rebasing bool
      * @return uint
      */
-    function claim(address _to, bool _rebasing) public returns (uint256) {
+    function claim(address _to) public returns (uint256) {
         Claim memory info = warmupInfo[_to];
 
         if (!info.lock) {
@@ -132,7 +129,7 @@ contract HectagonStaking is HectagonAccessControlled {
 
             gonsInWarmup = gonsInWarmup.sub(info.gons);
 
-            return _send(_to, sHECTA.balanceForGons(info.gons), _rebasing);
+            return _send(_to, sHECTA.balanceForGons(info.gons));
         }
         return 0;
     }
@@ -164,54 +161,24 @@ contract HectagonStaking is HectagonAccessControlled {
      * @param _to address
      * @param _amount uint
      * @param _trigger bool
-     * @param _rebasing bool
      * @return amount_ uint
      */
     function unstake(
         address _to,
         uint256 _amount,
-        bool _trigger,
-        bool _rebasing
+        bool _trigger
     ) external returns (uint256 amount_) {
         amount_ = _amount;
         uint256 bounty;
         if (_trigger) {
             bounty = rebase();
         }
-        if (_rebasing) {
-            sHECTA.safeTransferFrom(msg.sender, address(this), _amount);
-            amount_ = amount_.add(bounty);
-        } else {
-            gHECTA.burn(msg.sender, _amount); // amount was given in gHECTA terms
-            amount_ = gHECTA.balanceFrom(amount_).add(bounty); // convert amount to HECTA terms & add bounty
-        }
+
+        gHECTA.burn(msg.sender, _amount); // amount was given in gHECTA terms
+        amount_ = gHECTA.balanceFrom(amount_).add(bounty); // convert amount to HECTA terms & add bounty
 
         require(amount_ <= HECTA.balanceOf(address(this)), "Insufficient HECTA balance in contract");
         HECTA.safeTransfer(_to, amount_);
-    }
-
-    /**
-     * @notice convert _amount sHECTA into gBalance_ gHECTA
-     * @param _to address
-     * @param _amount uint
-     * @return gBalance_ uint
-     */
-    function wrap(address _to, uint256 _amount) external returns (uint256 gBalance_) {
-        sHECTA.safeTransferFrom(msg.sender, address(this), _amount);
-        gBalance_ = gHECTA.balanceTo(_amount);
-        gHECTA.mint(_to, gBalance_);
-    }
-
-    /**
-     * @notice convert _amount gHECTA into sBalance_ sHECTA
-     * @param _to address
-     * @param _amount uint
-     * @return sBalance_ uint
-     */
-    function unwrap(address _to, uint256 _amount) external returns (uint256 sBalance_) {
-        gHECTA.burn(msg.sender, _amount);
-        sBalance_ = gHECTA.balanceFrom(_amount);
-        sHECTA.safeTransfer(_to, sBalance_);
     }
 
     /**
@@ -247,20 +214,13 @@ contract HectagonStaking is HectagonAccessControlled {
      * @notice send staker their amount as sHECTA or gHECTA
      * @param _to address
      * @param _amount uint
-     * @param _rebasing bool
      */
     function _send(
         address _to,
-        uint256 _amount,
-        bool _rebasing
+        uint256 _amount
     ) internal returns (uint256) {
-        if (_rebasing) {
-            sHECTA.safeTransfer(_to, _amount); // send as sHECTA (equal unit as HECTA)
-            return _amount;
-        } else {
-            gHECTA.mint(_to, gHECTA.balanceTo(_amount)); // send as gHECTA (convert units from HECTA)
-            return gHECTA.balanceTo(_amount);
-        }
+        gHECTA.mint(_to, gHECTA.balanceTo(_amount)); // send as gHECTA (convert units from HECTA)
+        return gHECTA.balanceTo(_amount);
     }
 
     /* ========== VIEW FUNCTIONS ========== */
