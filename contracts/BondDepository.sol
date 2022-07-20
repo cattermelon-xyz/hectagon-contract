@@ -6,9 +6,9 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "./types/NoteKeeper.sol";
 import "./interfaces/IBondDepository.sol";
 
-/// @title Hectagon Bond Depository V2
+/// @title Hectagon Bond Depository
 
-contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
+contract HectagonBondDepository is IBondDepository, NoteKeeper {
     /* ======== DEPENDENCIES ======== */
 
     using SafeERC20 for IERC20;
