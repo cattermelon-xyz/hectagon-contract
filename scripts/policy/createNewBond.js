@@ -8,8 +8,8 @@ async function main() {
     const bondDepositoryAddress = "0xBfda31BD9fc537e586E22C3a39ac15E7C072775e";
     const hectabusdAddress = "0xCCb7836994943564f3222D5B48B642D5d8ca4C9D";
 
-    const HectagonBondDepositoryV2 = await ethers.getContractFactory("HectagonBondDepositoryV2");
-    const hectagonBondDepositoryV2 = await HectagonBondDepositoryV2.attach(bondDepositoryAddress);
+    const HectagonBondDepository = await ethers.getContractFactory("HectagonBondDepository");
+    const hectagonBondDepositoryV2 = await HectagonBondDepository.attach(bondDepositoryAddress);
 
     const hectaPerUSD = (600000 * 1e18) / (50000 * 1e9); // dedcimal 9, BusdAmount / HectaAmount
     await hectagonBondDepositoryV2.create(

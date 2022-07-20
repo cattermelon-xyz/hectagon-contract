@@ -7,12 +7,13 @@ export const CONTRACTS: Record<string, string> = {
     staking: "HectagonStaking",
     distributor: "Distributor",
     treasury: "HectagonTreasury",
-    bondDepo: "HectagonBondDepositoryV2",
+    bondDepo: "HectagonBondDepository",
     authority: "HectagonAuthority",
     migrator: "HectagonTokenMigrator",
     circulatingSupply: "HectaCirculatingSupply",
     redeemHelper: "RedeemHelper",
     snapshot: "Snapshot",
+    quickBond:"HectagonQuickBond"
 };
 
 export const ADDRESSES: Record<string, string> = {
