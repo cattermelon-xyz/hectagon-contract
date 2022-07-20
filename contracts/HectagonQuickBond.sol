@@ -1,9 +1,13 @@
-// SPDX-License-Identifier: AGPL-3.0
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+
 import "./interfaces/IBondDepository.sol";
 import "./interfaces/IStaking.sol";
 import "./interfaces/IUniswapV2Router.sol";
@@ -11,10 +15,6 @@ import "./interfaces/IUniswapV2Factory.sol";
 import "./interfaces/IUniswapV2Pair.sol";
 import "./interfaces/IWETH.sol";
 import "./libraries/Babylonian.sol";
-import "./interfaces/IERC20.sol";
-import "./libraries/SafeERC20.sol";
-import "./libraries/Address.sol";
-import "./interfaces/IBondDepository.sol";
 
 contract HectagonQuickBond is Ownable, Pausable {
     using SafeERC20 for IERC20;
@@ -32,8 +32,6 @@ contract HectagonQuickBond is Ownable, Pausable {
     address private constant wbnbTokenAddress = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
 
     uint256 private constant deadline = 0xf000000000000000000000000000000000000000000000000000000000000000;
-
-    constructor() {}
 
     // Emitted when `sender` successfully calls ZapBond
     event QuickBond(address indexed sender, address indexed token, uint256 tokensRec, address referral);

@@ -1,18 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.5;
+pragma solidity >=0.8.0;
 
-import "../libraries/SafeMath.sol";
-import "../libraries/Address.sol";
-
-import "../interfaces/IsHECTA.sol";
-import "../interfaces/IgHECTA.sol";
-import "../types/ERC20.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./interfaces/IsHECTA.sol";
+import "./interfaces/IgHECTA.sol";
 
 contract gHECTA is IgHECTA, ERC20 {
     /* ========== DEPENDENCIES ========== */
-
     using Address for address;
-    using SafeMath for uint256;
 
     /* ========== MODIFIERS ========== */
 
@@ -46,7 +42,7 @@ contract gHECTA is IgHECTA, ERC20 {
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor(address _sHECTA) ERC20("Governance HECTA", "gHECTA", 18) {
+    constructor(address _sHECTA) ERC20("Governance HECTA", "gHECTA") {
         require(_sHECTA != address(0), "Zero address: sHECTA");
         sHECTA = IsHECTA(_sHECTA);
         approved = msg.sender;
@@ -109,7 +105,7 @@ contract gHECTA is IgHECTA, ERC20 {
         @return uint
      */
     function balanceFrom(uint256 _amount) public view override returns (uint256) {
-        return _amount.mul(index()).div(10**decimals());
+        return (_amount * index()) / 10**decimals();
     }
 
     /**
@@ -118,7 +114,7 @@ contract gHECTA is IgHECTA, ERC20 {
         @return uint
      */
     function balanceTo(uint256 _amount) public view override returns (uint256) {
-        return _amount.mul(10**decimals()).div(index());
+        return (_amount * (10**decimals())) / index();
     }
 
     /**
@@ -176,7 +172,7 @@ contract gHECTA is IgHECTA, ERC20 {
 
     function _delegate(address delegator, address delegatee) internal {
         address currentDelegate = delegates[delegator];
-        uint256 delegatorBalance = _balances[delegator];
+        uint256 delegatorBalance = balanceOf(delegator);
         delegates[delegator] = delegatee;
 
         emit DelegateChanged(delegator, currentDelegate, delegatee);
@@ -193,14 +189,14 @@ contract gHECTA is IgHECTA, ERC20 {
             if (srcRep != address(0)) {
                 uint256 srcRepNum = numCheckpoints[srcRep];
                 uint256 srcRepOld = srcRepNum > 0 ? checkpoints[srcRep][srcRepNum - 1].votes : 0;
-                uint256 srcRepNew = srcRepOld.sub(amount);
+                uint256 srcRepNew = srcRepOld - amount;
                 _writeCheckpoint(srcRep, srcRepNum, srcRepOld, srcRepNew);
             }
 
             if (dstRep != address(0)) {
                 uint256 dstRepNum = numCheckpoints[dstRep];
                 uint256 dstRepOld = dstRepNum > 0 ? checkpoints[dstRep][dstRepNum - 1].votes : 0;
-                uint256 dstRepNew = dstRepOld.add(amount);
+                uint256 dstRepNew = dstRepOld + amount;
                 _writeCheckpoint(dstRep, dstRepNum, dstRepOld, dstRepNew);
             }
         }

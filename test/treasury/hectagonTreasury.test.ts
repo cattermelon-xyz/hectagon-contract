@@ -69,7 +69,7 @@ describe("HectagonTreasury", async () => {
 
             await treasury.initialize(owner.address, expectBalance);
             const sencondCall = treasury.initialize(owner.address, expectBalance);
-            await expect(sencondCall).to.revertedWith("Already initialized")
+            await expect(sencondCall).to.revertedWith("Already initialized");
         });
     });
 

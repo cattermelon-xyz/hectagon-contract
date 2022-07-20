@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Unlicensed
-pragma solidity 0.7.5;
+pragma solidity 0.8.10;
 
 import "../types/HectagonAccessControlled.sol";
 

@@ -1,10 +1,9 @@
-// SPDX-License-Identifier: AGPL-3.0
-pragma solidity ^0.7.5;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0;
 
-import "./libraries/SafeMath.sol";
-import "./libraries/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import "./interfaces/IERC20.sol";
 import "./interfaces/IsHECTA.sol";
 import "./interfaces/IgHECTA.sol";
 import "./interfaces/IDistributor.sol";
@@ -14,7 +13,6 @@ import "./types/HectagonAccessControlled.sol";
 contract HectagonStaking is HectagonAccessControlled {
     /* ========== DEPENDENCIES ========== */
 
-    using SafeMath for uint256;
     using SafeERC20 for IERC20;
     using SafeERC20 for IsHECTA;
     using SafeERC20 for IgHECTA;
@@ -90,7 +88,7 @@ contract HectagonStaking is HectagonAccessControlled {
         bool _claim
     ) external returns (uint256) {
         HECTA.safeTransferFrom(msg.sender, address(this), _amount);
-        _amount = _amount.add(rebase()); // add bounty if rebase occurred
+        _amount = _amount + rebase(); // add bounty if rebase occurred
         if (_claim && warmupPeriod == 0) {
             return _send(_to, _amount);
         } else {
@@ -100,13 +98,13 @@ contract HectagonStaking is HectagonAccessControlled {
             }
 
             warmupInfo[_to] = Claim({
-                deposit: info.deposit.add(_amount),
-                gons: info.gons.add(sHECTA.gonsForBalance(_amount)),
-                expiry: epoch.number.add(warmupPeriod),
+                deposit: info.deposit + _amount,
+                gons: info.gons + sHECTA.gonsForBalance(_amount),
+                expiry: epoch.number + warmupPeriod,
                 lock: info.lock
             });
 
-            gonsInWarmup = gonsInWarmup.add(sHECTA.gonsForBalance(_amount));
+            gonsInWarmup = gonsInWarmup + sHECTA.gonsForBalance(_amount);
 
             return _amount;
         }
@@ -127,7 +125,7 @@ contract HectagonStaking is HectagonAccessControlled {
         if (epoch.number >= info.expiry && info.expiry != 0) {
             delete warmupInfo[_to];
 
-            gonsInWarmup = gonsInWarmup.sub(info.gons);
+            gonsInWarmup = gonsInWarmup - info.gons;
 
             return _send(_to, sHECTA.balanceForGons(info.gons));
         }
@@ -142,7 +140,7 @@ contract HectagonStaking is HectagonAccessControlled {
         Claim memory info = warmupInfo[msg.sender];
         delete warmupInfo[msg.sender];
 
-        gonsInWarmup = gonsInWarmup.sub(info.gons);
+        gonsInWarmup = gonsInWarmup - info.gons;
 
         HECTA.safeTransfer(msg.sender, info.deposit);
 
@@ -175,7 +173,7 @@ contract HectagonStaking is HectagonAccessControlled {
         }
 
         gHECTA.burn(msg.sender, _amount); // amount was given in gHECTA terms
-        amount_ = gHECTA.balanceFrom(amount_).add(bounty); // convert amount to HECTA terms & add bounty
+        amount_ = gHECTA.balanceFrom(amount_) + bounty; // convert amount to HECTA terms & add bounty
 
         require(amount_ <= HECTA.balanceOf(address(this)), "Insufficient HECTA balance in contract");
         HECTA.safeTransfer(_to, amount_);
@@ -190,7 +188,7 @@ contract HectagonStaking is HectagonAccessControlled {
         if (epoch.end <= block.timestamp) {
             sHECTA.rebase(epoch.distribute, epoch.number);
 
-            epoch.end = epoch.end.add(epoch.length);
+            epoch.end = epoch.end + epoch.length;
             epoch.number++;
 
             if (address(distributor) != address(0)) {
@@ -199,10 +197,10 @@ contract HectagonStaking is HectagonAccessControlled {
             }
             uint256 balance = HECTA.balanceOf(address(this));
             uint256 staked = sHECTA.circulatingSupply();
-            if (balance <= staked.add(bounty)) {
+            if (balance <= staked + bounty) {
                 epoch.distribute = 0;
             } else {
-                epoch.distribute = balance.sub(staked).sub(bounty);
+                epoch.distribute = balance - staked - bounty;
             }
         }
         return bounty;
@@ -244,7 +242,7 @@ contract HectagonStaking is HectagonAccessControlled {
      * @notice seconds until the next epoch begins
      */
     function secondsToNextEpoch() external view returns (uint256) {
-        return epoch.end.sub(block.timestamp);
+        return epoch.end - block.timestamp;
     }
 
     /* ========== MANAGERIAL FUNCTIONS ========== */
