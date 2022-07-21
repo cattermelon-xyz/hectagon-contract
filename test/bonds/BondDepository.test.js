@@ -53,7 +53,7 @@ describe("Bond Depository", async () => {
         erc20Factory = await smock.mock("MockERC20");
         gHectaFactory = await smock.mock("MockGHecta");
 
-        depositoryFactory = await ethers.getContractFactory("HectagonBondDepositoryV2");
+        depositoryFactory = await ethers.getContractFactory("HectagonBondDepository");
     });
 
     beforeEach(async () => {
