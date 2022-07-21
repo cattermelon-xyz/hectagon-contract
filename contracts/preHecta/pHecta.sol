@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "../interfaces/ITreasury.sol";
+import "../interfaces/IHectaCirculatingSupply.sol";
 
 contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
     using Counters for Counters.Counter;
@@ -20,6 +21,7 @@ contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
     address public hectaAddress;
     address public treasuryAddress;
     address public busdAddress;
+    IHectaCirculatingSupply public circulatingHectaContract;
 
     uint256 public startTimestamp;
     bool public useWhiteList;
@@ -27,8 +29,10 @@ contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
     mapping(address => bool) public investors;
     mapping(address => Holder) public holders;
     mapping(uint256 => Space) public spaces;
+    mapping(address => Note[]) public notes; // user exercise data
 
     uint256 public spaceLength = 604800; // 7 days timestamp
+    uint256 public vestingLength = 864000; // 10 days timestamp
 
     /** Constant */
     uint256 public constant RATE_DENOMINATOR = 1000000; // 1,000,000
@@ -44,6 +48,12 @@ contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
         uint256 maxClaim;
         uint256 claimed;
         uint256 currentSpaceProfit;
+    }
+
+    struct Note {
+        uint256 claimableAt;
+        uint256 claimedAt;
+        uint256 amount;
     }
 
     struct Space {
@@ -91,14 +101,20 @@ contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
         spaceLength = spaceLength_;
     }
 
+    function setVestingLength(uint256 vestingLength_) external onlyOwner {
+        vestingLength = vestingLength_;
+    }
+
     function initialize(
         address hectaAddress_,
         address treasuryAddress_,
-        address busdAddress_
+        address busdAddress_,
+        IHectaCirculatingSupply circulatingHectaContract_
     ) external onlyOwner {
         hectaAddress = hectaAddress_;
         treasuryAddress = treasuryAddress_;
         busdAddress = busdAddress_;
+        circulatingHectaContract = circulatingHectaContract_;
         IERC20(busdAddress).approve(treasuryAddress, 1e33);
     }
 
@@ -157,11 +173,12 @@ contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
         _burn(msg.sender, amount_);
         holders[msg.sender].claimed += amount_;
 
-        IERC20(busdAddress).safeTransferFrom(msg.sender, address(this), busdAmount);
+        IERC20(busdAddress).safeTransferFrom(msg.sender, treasuryAddress, busdAmount);
 
-        uint256 hectaToSend = ITreasury(treasuryAddress).deposit(busdAmount, busdAddress, 0);
+        // the new note is pushed to the user's array
+        notes[msg.sender].push(Note({claimableAt: block.timestamp + vestingLength, claimedAt: 0, amount: amount_}));
 
-        IERC20(hectaAddress).transfer(msg.sender, hectaToSend);
+        ITreasury(treasuryAddress).mint(address(this), amount_);
 
         emit Exercise(msg.sender, amount_);
     }
@@ -216,7 +233,11 @@ contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
         Space memory currentSpace = spaces[spaceCounter.current()];
         if (startTimestamp > 0 && block.timestamp - currentSpace.startedTime > spaceLength) {
             spaceCounter.increment();
-            spaces[spaceCounter.current()] = Space(IERC20(hectaAddress).totalSupply(), totalSupply(), block.timestamp);
+            spaces[spaceCounter.current()] = Space(
+                circulatingHectaContract.circulatingSupply(),
+                totalSupply(),
+                block.timestamp
+            );
         }
     }
 
@@ -242,7 +263,7 @@ contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
         }
 
         if (block.timestamp - currentSpace.startedTime > spaceLength) {
-            Space memory newSpace = Space(IERC20(hectaAddress).totalSupply(), totalSupply(), block.timestamp);
+            Space memory newSpace = Space(circulatingHectaContract.circulatingSupply(), totalSupply(), block.timestamp);
 
             currentSpaceProfit =
                 ((((newSpace.totalHecta - spaces[_spaceCount].totalHecta) * RATE_NUMERATOR) / RATE_DENOMINATOR) *
@@ -252,6 +273,69 @@ contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
             accumulatedProfit += currentSpaceProfit;
         }
         return RebaseInfo(holders[addr].maxClaim + accumulatedProfit, currentSpaceProfit, _spaceCount);
+    }
+
+    /* ========== VIEW ========== */
+
+    function indexesFor(address _user) public view returns (uint256[] memory) {
+        Note[] memory info = notes[_user];
+
+        uint256 length;
+        for (uint256 i = 0; i < info.length; i++) {
+            if (info[i].claimedAt == 0 && info[i].amount != 0) length++;
+        }
+
+        uint256[] memory indexes = new uint256[](length);
+        uint256 position;
+
+        for (uint256 i = 0; i < info.length; i++) {
+            if (info[i].claimedAt == 0 && info[i].amount != 0) {
+                indexes[position] = i;
+                position++;
+            }
+        }
+
+        return indexes;
+    }
+
+    function pendingFor(address _user, uint256 _index) public view returns (uint256 amount_, bool claimable_) {
+        Note memory note = notes[_user][_index];
+
+        amount_ = note.amount;
+        claimable_ = note.claimedAt == 0 && note.claimableAt <= block.timestamp && note.amount != 0;
+    }
+
+    /* ========== CLAIM ========== */
+
+    /**
+     * @notice             claim notes for user
+     * @param _user        the user to claim for
+     * @param _indexes     the note indexes to claim
+     * @return amount_     sum of amount sent, in HECTA
+     */
+    function claim(address _user, uint256[] memory _indexes) public returns (uint256 amount_) {
+        uint48 time = uint48(block.timestamp);
+
+        for (uint256 i = 0; i < _indexes.length; i++) {
+            (uint256 amount, bool claimable) = pendingFor(_user, _indexes[i]);
+
+            if (claimable) {
+                notes[_user][_indexes[i]].claimedAt = time; // mark as claimed
+                amount_ += amount;
+            }
+        }
+
+        IERC20(hectaAddress).transfer(_user, amount_);
+    }
+
+    /**
+     * @notice             claim all claimable markets for user
+     * @dev                if possible, query indexesFor() off-chain and input in claim() to save gas
+     * @param _user        user to claim all notes for
+     * @return             sum of amount sent, in HECTA
+     */
+    function claimAll(address _user) external returns (uint256) {
+        return claim(_user, indexesFor(_user));
     }
 
     /**

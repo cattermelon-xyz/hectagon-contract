@@ -1,5 +1,5 @@
 const { ethers } = require("hardhat");
-const { ZERO_ADDRESS, ADDRESSES, LARGE_APPROVAL } = require("./constants");
+const { ADDRESSES } = require("./constants");
 
 async function main() {
     const [deployer] = await ethers.getSigners();
@@ -8,21 +8,12 @@ async function main() {
     const HectagonTreasury = await ethers.getContractFactory("HectagonTreasury");
     const treasury = await HectagonTreasury.attach(ADDRESSES.treasury);
 
-    const BUSD = await ethers.getContractFactory("BEP20Token");
-    const busd = await BUSD.attach(ADDRESSES.busd);
+    await treasury.enable("0", deployer.address);
+    await treasury.enable("1", deployer.address);
 
-    await treasury.enable("0", deployer.address, ZERO_ADDRESS);
-    await treasury.enable("4", deployer.address, ZERO_ADDRESS);
-    console.log("Add Treasury's deposit permission to deployer");
+    await treasury.initialize(deployer.address, ethers.utils.parseUnits("30000", 9));
 
-    await busd.approve(ADDRESSES.treasury, LARGE_APPROVAL);
-    console.log("LARGE_APPROVAL");
-
-    await treasury.enable("2", busd.address, ZERO_ADDRESS);
-    console.log("Add Treasury's deposit permission to busd");
-
-    await treasury.deposit("30000000000000000000000", busd.address, "14000000000000");
-    console.log("Treasury deposit");
+    console.log("Treasury initialized");
 }
 
 // We recommend this pattern to be able to use async/await everywhere

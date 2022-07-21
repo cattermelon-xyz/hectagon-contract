@@ -27,7 +27,7 @@ const chainIds = {
 const privateKey = process.env.PRIVATE_KEY ?? "NO_PRIVATE_KEY";
 // Make sure node is setup on Alchemy website
 const alchemyApiKey = process.env.ALCHEMY_API_KEY ?? "NO_ALCHEMY_API_KEY";
-const moralisApiKey = process.env.MORALIS_API_KEY ?? "NO_MORALIS_API_KEY";
+const quicknoteApiKey = process.env.QUICKNODE_API_KEY ?? "QUICKNODE_API_KEY";
 
 function getChainConfig(network: keyof typeof chainIds): NetworkUserConfig {
     const url = `https://eth-${network}.alchemyapi.io/v2/${alchemyApiKey}`;
@@ -50,13 +50,13 @@ const config: HardhatUserConfig = {
     networks: {
         hardhat: {
             forking: {
-                url: `https://speedy-nodes-nyc.moralis.io/${moralisApiKey}/bsc/mainnet`,
+                url: `https://blue-ancient-river.bsc.discover.quiknode.pro/${quicknoteApiKey}`,
             },
             chainId: chainIds.hardhat,
             gas: 6000000,
             accounts: {
-                accountsBalance: "10000000000000000000000000"
-            }
+                accountsBalance: "10000000000000000000000000",
+            },
         },
         // mainnet: getChainConfig("mainnet"),
         ropsten: getChainConfig("ropsten"),
@@ -160,8 +160,8 @@ const config: HardhatUserConfig = {
         apiKey: process.env.ETHERSCAN_API_KEY,
     },
     mocha: {
-        timeout: 80000
-    }
+        timeout: 80000,
+    },
 };
 
 export default config;

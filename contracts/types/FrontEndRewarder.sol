@@ -1,28 +1,41 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
 import "../types/HectagonAccessControlled.sol";
-import "../interfaces/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 abstract contract FrontEndRewarder is HectagonAccessControlled {
-    struct Reward {
-        uint256 referrer; // reward for referrer (3 decimals: 100 = 1%)
-        uint256 buyer; // reward for bond buyer (3 decimals: 100 = 1%)
-        uint256 referrerAmount;
+    struct Give {
+        uint256 toRefer;
+        uint256 toDaoInvestment;
+        uint256 toDaoCommunity;
+        uint256 toBuyer;
     }
 
-    struct Give {
-        uint256 toRef;
-        uint256 toDAO;
-        uint256 toBuyer;
+    struct ReferTerm {
+        uint256 referrerPercent; // reward for referrer (3 decimals: 100 = 1%)
+        uint256 buyerPercent; // reward for bond buyer (3 decimals: 100 = 1%)
+    }
+
+    struct PartnerTerm {
+        uint256 amount; // partner's remaining hecta bonus, decimal 9
+        uint256 percent; // partner's bonus percent per deposit, 3 decimals: 100 = 1%
     }
 
     /* ========= STATE VARIABLES ========== */
 
-    uint256 public daoReward; // % reward for dao (3 decimals: 100 = 1%)
-    uint256 public rewardCap = 1000; // % reward Cap for referrer (3 decimals: 100 = 1%)
-    mapping(address => Reward) public rewards; // term for each referers
-    uint256 public rewardTime; // cannot get rewards before that time
+    mapping(address => uint256) public rewards; // rewards notes
+
+    mapping(address => PartnerTerm) public partnerTerms; // reward term for each partner
+    mapping(address => ReferTerm) public referTerms; // reward term for refer
+
+    uint256 public referTermCap = 2000; // % cap for referrer (3 decimals: 2000 = 20%)
+    uint256 public partnerTermCap = 10000; // % cap for partner (3 decimals: 10000 = 100%)
+
+    uint256 public daoInvestmentPercent = 10000; // 3 decimals: 10000 = 100%
+
+    uint256 public daoCommunityPercent = 45000; // 3 decimals: 45000 = 450%
+
     uint256 private immutable RATE_DENOMINATOR = 1e4;
 
     IERC20 internal immutable hecta; // reward token
@@ -35,79 +48,94 @@ abstract contract FrontEndRewarder is HectagonAccessControlled {
 
     // pay reward to referrer
     function getReward() external {
-        require(block.timestamp >= rewardTime, "Cannot get reward in vesting time");
-        uint256 reward = rewards[msg.sender].referrerAmount;
+        uint256 reward = rewards[msg.sender];
 
-        rewards[msg.sender].referrerAmount = 0;
+        rewards[msg.sender] = 0;
         hecta.transfer(msg.sender, reward);
     }
 
     /* ========= INTERNAL ========== */
 
     /**
-     * @notice              add new market payout to user data
-     * @return rewards_     total rewards
-     * @return finalPayout_ buyer final payout
-     * @return commission_  refers commission
+     * @notice          add new market payout to user data
+     * @return give     rewards data
      */
-    function _giveRewards(uint256 _payout, address _referral)
-        internal
-        returns (
-            uint256,
-            uint256,
-            uint256
-        )
-    {
-        // first we calculate rewards paid to the DAO and to the front end operator (referrer)
-        Give memory give;
-        give.toDAO = (_payout * daoReward) / RATE_DENOMINATOR;
+    function _giveRewards(
+        uint256 _payout,
+        address _referral,
+        address _buyer
+    ) internal returns (Give memory give) {
+        // first we calculate rewards paid to the DAO and referrer
+        give.toDaoInvestment += (_payout * daoInvestmentPercent) / RATE_DENOMINATOR;
+        give.toDaoCommunity += (_payout * daoCommunityPercent) / RATE_DENOMINATOR;
 
-        rewards[authority.guardian()].referrerAmount += give.toDAO;
+        // check partner logic
+        if (partnerTerms[_buyer].percent > 0) {
+            uint256 partnerBonus = (_payout * partnerTerms[_buyer].percent) / RATE_DENOMINATOR;
+            if (partnerBonus >= partnerTerms[_buyer].amount) {
+                give.toBuyer = partnerTerms[_buyer].amount;
+            } else {
+                give.toBuyer = partnerBonus;
+            }
+            partnerTerms[_buyer].amount -= give.toBuyer;
+        } else {
+            ReferTerm memory refTerm = referTerms[_referral];
 
-        Reward memory reward = rewards[_referral];
+            if (refTerm.referrerPercent > 0) {
+                give.toRefer = (_payout * refTerm.referrerPercent) / RATE_DENOMINATOR;
+                rewards[_referral] += give.toRefer;
+            }
 
-        if (reward.referrer > 0) {
-            give.toRef = (_payout * reward.referrer) / RATE_DENOMINATOR;
-            rewards[_referral].referrerAmount += give.toRef;
+            if (refTerm.buyerPercent > 0) {
+                give.toBuyer = (_payout * refTerm.buyerPercent) / RATE_DENOMINATOR;
+            }
         }
 
-        if (reward.buyer > 0) {
-            give.toBuyer = (_payout * reward.buyer) / RATE_DENOMINATOR;
-        }
-
-        return (give.toDAO + give.toRef + give.toBuyer, give.toBuyer + _payout, give.toRef);
+        return give;
     }
 
     /**
      * @notice set Cap for referrer % reward
      */
-    function setRewardCap(uint256 _cap) external onlyGovernor {
-        rewardCap = _cap;
+    function setReferTermCap(uint256 _cap) external onlyGovernor {
+        referTermCap = _cap;
     }
 
     /**
-     * @notice set rewardTime for DAO
+     * @notice set Cap for referrer % reward
      */
-    function setRewardTime(uint256 _time) external onlyGovernor {
-        rewardTime = _time;
+    function setPartnerTermCap(uint256 _cap) external onlyGovernor {
+        partnerTermCap = _cap;
+    }
+
+    function setDaoRewards(uint256 daoInvestmentPercent_, uint256 daoCommunityPercent_) external onlyGovernor {
+        daoInvestmentPercent = daoInvestmentPercent_;
+        daoCommunityPercent = daoCommunityPercent_;
     }
 
     /**
-     * @notice set rewards for DAO
+     * @notice set referrer term
      */
-    function setDAORewards(uint256 _toDAO) external onlyGovernor {
-        daoReward = _toDAO;
-    }
-
-    /**
-     * @notice set referrer and buyer for specific address
-     */
-    function setReferConfig(
+    function setReferTerm(
         address _referrer,
-        uint256 _ref,
-        uint256 _buyer
+        uint256 _referrerPercent,
+        uint256 _buyerPercent
     ) external onlyPolicy {
-        require((_buyer + _ref) <= rewardCap, "reward too high");
-        rewards[_referrer] = Reward(_ref, _buyer, rewards[_referrer].referrerAmount);
+        require(_referrer != address(0), "Zero address: Referrer");
+        require((_referrerPercent + _buyerPercent) <= referTermCap, "reward too high");
+        referTerms[_referrer] = ReferTerm({referrerPercent: _referrerPercent, buyerPercent: _buyerPercent});
+    }
+
+    /**
+     * @notice set partner term
+     */
+    function setPartnerTerm(
+        address _partner,
+        uint256 _amount,
+        uint256 _percent
+    ) external onlyPolicy {
+        require(_partner != address(0), "Zero address: Partner");
+        require(_percent <= partnerTermCap, "reward too high");
+        partnerTerms[_partner] = PartnerTerm(_amount, _percent);
     }
 }

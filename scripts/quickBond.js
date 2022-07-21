@@ -17,7 +17,7 @@ async function main() {
         "0xa35062141Fa33BCA92Ce69FeD37D0E8908868AAe",
         "0x9e3F47234e72e222348552e028ceEB8f4C428d26",
     ];
-    const amount = ethers.utils.parseUnits('10', 'ether');
+    const amount = ethers.utils.parseUnits("10", "ether");
 
     const _minTokenReceive = 0; // slipage 1, slippage khi swap
     const _maxPrice = "10000"; // slipage 2, slippage của giá bond
@@ -26,7 +26,7 @@ async function main() {
     // approve token trước khi mua
     //  nếu approve số  lượng lớn từ trước thì có thể bỏ qua bước này
     await cake.approve(quickBondAddress, amount);
-   
+
     await quickBond.quickLPBond(
         _fromTokenContractAddress,
         _pairAddress,
@@ -40,27 +40,24 @@ async function main() {
         _bondId
     );
 
-    const axsMockAdress = '0x24E03C6c2975B60d2E56F23bBFaa8de71AD654aB';
+    const axsMockAdress = "0x24E03C6c2975B60d2E56F23bBFaa8de71AD654aB";
     const axsMock = new ethers.Contract(axsMockAdress, cakeAbi, deployer);
-    const amount2 = ethers.utils.parseUnits('10', 'ether');
+    const amount2 = ethers.utils.parseUnits("10", "ether");
 
     await axsMock.approve(quickBondAddress, amount2);
 
-    const path2 = [
-        axsMockAdress,
-        "0x9e3F47234e72e222348552e028ceEB8f4C428d26",
-    ];
+    const path2 = [axsMockAdress, "0x9e3F47234e72e222348552e028ceEB8f4C428d26"];
     const _maxPrice2 = "4971251083"; // slipage của giá bond
 
     await quickBond.quickStableBond(
         axsMockAdress,
-        '0x9e3F47234e72e222348552e028ceEB8f4C428d26', // busd
+        "0x9e3F47234e72e222348552e028ceEB8f4C428d26", // busd
         path2,
         amount2,
         false,
         "0x8703d1C3cd670dd678ddFacA1e98237f6a342C3C",
-        _maxPrice2, 
-        '3'
+        _maxPrice2,
+        "3"
     );
 }
 

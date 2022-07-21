@@ -1,7 +1,7 @@
-// SPDX-License-Identifier: AGPL-3.0
-pragma solidity >=0.7.5;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0;
 
-import "./IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IBondDepository {
     // Info about each type of market
@@ -47,6 +47,12 @@ interface IBondDepository {
         uint256 finalPayout;
         uint256 expiry;
         uint256 index;
+    }
+
+    struct ControlDecay {
+        uint64 decay; // change in control variable
+        uint48 secondsSince; // seconds since last change in control variable
+        bool active; // whether or not change remains active
     }
 
     /**

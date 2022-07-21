@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "./types/NoteKeeper.sol";
-import "./libraries/SafeERC20.sol";
-import "./interfaces/IERC20Metadata.sol";
 import "./interfaces/IBondDepository.sol";
 
 /// @title Hectagon Bond Depository V2
@@ -22,9 +22,12 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
         uint256 amount,
         uint256 price,
         uint256 noteId,
-        address buyer,
+        address indexed buyer,
         address indexed referral,
-        uint256 commission
+        uint256 commission,
+        uint256 toBuyer,
+        uint256 toDaoCommunity,
+        uint256 toDaoInvestment
     );
     event Tuned(uint256 indexed id, uint64 oldControlVariable, uint64 newControlVariable);
 
@@ -35,6 +38,9 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
     Terms[] public terms; // deposit construction data
     Metadata[] public metadata; // extraneous market data
     mapping(uint256 => Adjustment) public adjustments; // control variable changes
+
+    uint256 public totalPayout;
+    uint256 public payoutCap = 2_000_000 * 1e9;
 
     // Queries
     mapping(address => uint256[]) public marketsForQuote; // market IDs for quote token
@@ -52,6 +58,14 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
         _hecta.approve(address(_staking), 1e45);
     }
 
+    /**
+     * @notice                  set totalPayoutCap
+     * @param payoutCap_   ID of market to close
+     */
+    function setPayoutCap(uint256 payoutCap_) external onlyGovernor {
+        payoutCap = payoutCap_;
+    }
+
     /* ======== DEPOSIT ======== */
 
     /**
@@ -61,7 +75,6 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
      * @param _maxPrice     the maximum price at which to buy
      * @param _user         the recipient of the payout
      * @param _referral     the front end operator address
-     * @return userBond_    UserBond
      */
     function deposit(
         uint256 _id,
@@ -70,6 +83,7 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
         address _user,
         address _referral
     ) external override returns (UserBond memory userBond_) {
+        Give memory give; // Give struct inherited fom FrontEndRewarder
         Market storage market = markets[_id];
         Terms memory term = terms[_id];
         uint48 currentTime = uint48(block.timestamp);
@@ -101,6 +115,7 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
         // markets have a max payout amount, capping size because deposits
         // do not experience slippage. max payout is recalculated upon tuning
         require(payout_ <= market.maxPayout, "Depository: max size exceeded");
+        require((totalPayout + payout_) <= payoutCap, "Depository: total payout hit payout cap");
 
         /*
          * each market is initialized with a capacity
@@ -138,25 +153,33 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
         // incrementing total debt raises the price of the next bond
         market.totalDebt += uint64(payout_);
 
-        uint256 commission_;
         /**
          * user data is stored as Notes. these are isolated array entries
          * storing the amount due, the time created, the time when payout
          * is redeemable, the time when payout was redeemed, and the ID
          * of the market deposited into
          */
-        (userBond_.index, userBond_.finalPayout, commission_) = addNote(
-            _user,
-            payout_,
-            uint48(userBond_.expiry),
-            uint48(_id),
-            _referral
-        );
+        (userBond_.index, give) = addNote(_user, payout_, uint48(userBond_.expiry), uint48(_id), _referral);
 
-        emit Bond(_id, _amount, price, userBond_.index, _user, _referral, commission_);
+        userBond_.finalPayout = payout_ + give.toBuyer;
+
+        emit Bond(
+            _id,
+            _amount,
+            price,
+            userBond_.index,
+            _user,
+            _referral,
+            give.toRefer,
+            give.toBuyer,
+            give.toDaoCommunity,
+            give.toDaoInvestment
+        );
 
         // transfer payment to treasury
         market.quoteToken.safeTransferFrom(msg.sender, address(treasury), _amount);
+
+        totalPayout += payout_;
 
         // if max debt is breached, the market is closed
         // this a circuit breaker
@@ -167,6 +190,8 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
             // if market will continue, the control variable is tuned to hit targets on time
             _tune(_id, currentTime);
         }
+
+        return userBond_;
     }
 
     /**
@@ -201,12 +226,12 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
         if (adjustments[_id].active) {
             Adjustment storage adjustment = adjustments[_id];
 
-            (uint64 adjustBy, uint48 secondsSince, bool stillActive) = _controlDecay(_id);
-            terms[_id].controlVariable -= adjustBy;
+            ControlDecay memory controlDecay = _controlDecay(_id);
+            terms[_id].controlVariable -= controlDecay.decay;
 
-            if (stillActive) {
-                adjustment.change -= adjustBy;
-                adjustment.timeToAdjusted -= secondsSince;
+            if (controlDecay.active) {
+                adjustment.change -= controlDecay.decay;
+                adjustment.timeToAdjusted -= controlDecay.secondsSince;
                 adjustment.lastAdjustment = _time;
             } else {
                 adjustment.active = false;
@@ -248,7 +273,7 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
             uint256 targetDebt = (capacity * meta.length) / timeRemaining;
 
             // derive a new control variable from the target debt and current supply
-            uint64 newControlVariable = uint64((price * treasury.baseSupply()) / targetDebt);
+            uint64 newControlVariable = uint64((price * hecta.totalSupply()) / targetDebt);
 
             emit Tuned(_id, terms[_id].controlVariable, newControlVariable);
 
@@ -324,7 +349,7 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
          * debt ratio = total debt / supply
          * therefore, control variable = price / debt ratio
          */
-        uint256 controlVariable = (_market[1] * treasury.baseSupply()) / targetDebt;
+        uint256 controlVariable = (_market[1] * hecta.totalSupply()) / targetDebt;
 
         // depositing into, or getting info for, the created market uses this ID
         id_ = markets.length;
@@ -431,7 +456,7 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
      * @return             debt ratio for market in quote decimals
      */
     function debtRatio(uint256 _id) public view override returns (uint256) {
-        return (currentDebt(_id) * (10**metadata[_id].quoteDecimals)) / treasury.baseSupply();
+        return (currentDebt(_id) * (10**metadata[_id].quoteDecimals)) / hecta.totalSupply();
     }
 
     /**
@@ -464,8 +489,8 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
      * @return             control variable for market in HECTA decimals
      */
     function currentControlVariable(uint256 _id) public view returns (uint256) {
-        (uint64 decay, , ) = _controlDecay(_id);
-        return terms[_id].controlVariable - decay;
+        ControlDecay memory controlDecay = _controlDecay(_id);
+        return terms[_id].controlVariable - controlDecay.decay;
     }
 
     /**
@@ -540,31 +565,23 @@ contract HectagonBondDepositoryV2 is IBondDepository, NoteKeeper {
      * @return                  current debt for market in quote decimals
      */
     function _debtRatio(uint256 _id) internal view returns (uint256) {
-        return (markets[_id].totalDebt * (10**metadata[_id].quoteDecimals)) / treasury.baseSupply();
+        return (markets[_id].totalDebt * (10**metadata[_id].quoteDecimals)) / hecta.totalSupply();
     }
 
     /**
      * @notice                  amount to decay control variable by
      * @param _id               ID of market
-     * @return decay_           change in control variable
-     * @return secondsSince_    seconds since last change in control variable
-     * @return active_          whether or not change remains active
+     * @return controlDecay
      */
-    function _controlDecay(uint256 _id)
-        internal
-        view
-        returns (
-            uint64 decay_,
-            uint48 secondsSince_,
-            bool active_
-        )
-    {
+    function _controlDecay(uint256 _id) internal view returns (ControlDecay memory controlDecay) {
         Adjustment memory info = adjustments[_id];
-        if (!info.active) return (0, 0, false);
+        if (!info.active) return controlDecay;
 
-        secondsSince_ = uint48(block.timestamp) - info.lastAdjustment;
+        controlDecay.secondsSince = uint48(block.timestamp) - info.lastAdjustment;
 
-        active_ = secondsSince_ < info.timeToAdjusted;
-        decay_ = active_ ? (info.change * secondsSince_) / info.timeToAdjusted : info.change;
+        controlDecay.active = controlDecay.secondsSince < info.timeToAdjusted;
+        controlDecay.decay = controlDecay.active
+            ? (info.change * controlDecay.secondsSince) / info.timeToAdjusted
+            : info.change;
     }
 }

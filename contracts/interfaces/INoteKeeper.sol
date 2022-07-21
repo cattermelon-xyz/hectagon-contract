@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-only
-pragma solidity >=0.7.5;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0;
 
 interface INoteKeeper {
     // Info for market note
@@ -13,11 +13,10 @@ interface INoteKeeper {
 
     function redeem(
         address _user,
-        uint256[] memory _indexes,
-        bool _sendgHECTA
+        uint256[] memory _indexes
     ) external returns (uint256);
 
-    function redeemAll(address _user, bool _sendgHECTA) external returns (uint256);
+    function redeemAll(address _user) external returns (uint256);
 
     function pushNote(address to, uint256 index) external;
 

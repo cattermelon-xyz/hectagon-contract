@@ -1,20 +1,12 @@
-// SPDX-License-Identifier: AGPL-3.0
-pragma solidity ^0.7.5;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-import "./libraries/Address.sol";
-import "./libraries/SafeMath.sol";
-
-import "./types/ERC20Permit.sol";
-
+import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 import "./interfaces/IgHECTA.sol";
 import "./interfaces/IsHECTA.sol";
 import "./interfaces/IStaking.sol";
 
 contract sHectagon is IsHECTA, ERC20Permit {
-    /* ========== DEPENDENCIES ========== */
-
-    using SafeMath for uint256;
-
     /* ========== EVENTS ========== */
 
     event LogSupply(uint256 indexed epoch, uint256 totalSupply);
@@ -42,6 +34,8 @@ contract sHectagon is IsHECTA, ERC20Permit {
 
     /* ========== STATE VARIABLES ========== */
 
+    uint256 private _totalSupply;
+
     address internal initializer;
 
     uint256 internal INDEX; // Index Gons - tracks rebase growth
@@ -67,14 +61,17 @@ contract sHectagon is IsHECTA, ERC20Permit {
     mapping(address => mapping(address => uint256)) private _allowedValue;
 
     address public treasury;
-    mapping(address => uint256) public override debtBalances;
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor() ERC20("Staked HECTA", "sHECTA", 9) ERC20Permit("Staked HECTA") {
+    constructor() ERC20("Staked HECTA", "sHECTA") ERC20Permit("Staked HECTA") {
         initializer = msg.sender;
         _totalSupply = INITIAL_FRAGMENTS_SUPPLY;
-        _gonsPerFragment = TOTAL_GONS.div(_totalSupply);
+        _gonsPerFragment = TOTAL_GONS / _totalSupply;
+    }
+
+    function decimals() public view virtual override returns (uint8) {
+        return 9;
     }
 
     /* ========== INITIALIZATION ========== */
@@ -124,18 +121,18 @@ contract sHectagon is IsHECTA, ERC20Permit {
             emit LogRebase(epoch_, 0, index());
             return _totalSupply;
         } else if (circulatingSupply_ > 0) {
-            rebaseAmount = profit_.mul(_totalSupply).div(circulatingSupply_);
+            rebaseAmount = (profit_ * _totalSupply) / circulatingSupply_;
         } else {
             rebaseAmount = profit_;
         }
 
-        _totalSupply = _totalSupply.add(rebaseAmount);
+        _totalSupply = _totalSupply + rebaseAmount;
 
         if (_totalSupply > MAX_SUPPLY) {
             _totalSupply = MAX_SUPPLY;
         }
 
-        _gonsPerFragment = TOTAL_GONS.div(_totalSupply);
+        _gonsPerFragment = TOTAL_GONS / _totalSupply;
 
         _storeRebase(circulatingSupply_, profit_, epoch_);
 
@@ -153,7 +150,7 @@ contract sHectagon is IsHECTA, ERC20Permit {
         uint256 profit_,
         uint256 epoch_
     ) internal {
-        uint256 rebasePercent = profit_.mul(1e18).div(previousCirculating_);
+        uint256 rebasePercent = (profit_ * 1e18) / previousCirculating_;
         rebases.push(
             Rebase({
                 epoch: epoch_,
@@ -173,12 +170,11 @@ contract sHectagon is IsHECTA, ERC20Permit {
     /* ========== MUTATIVE FUNCTIONS =========== */
 
     function transfer(address to, uint256 value) public override(IERC20, ERC20) returns (bool) {
-        uint256 gonValue = value.mul(_gonsPerFragment);
+        uint256 gonValue = value * _gonsPerFragment;
 
-        _gonBalances[msg.sender] = _gonBalances[msg.sender].sub(gonValue);
-        _gonBalances[to] = _gonBalances[to].add(gonValue);
+        _gonBalances[msg.sender] = _gonBalances[msg.sender] - gonValue;
+        _gonBalances[to] = _gonBalances[to] + gonValue;
 
-        require(balanceOf(msg.sender) >= debtBalances[msg.sender], "Debt: cannot transfer amount");
         emit Transfer(msg.sender, to, value);
         return true;
     }
@@ -188,14 +184,13 @@ contract sHectagon is IsHECTA, ERC20Permit {
         address to,
         uint256 value
     ) public override(IERC20, ERC20) returns (bool) {
-        _allowedValue[from][msg.sender] = _allowedValue[from][msg.sender].sub(value);
+        _allowedValue[from][msg.sender] = _allowedValue[from][msg.sender] - value;
         emit Approval(from, msg.sender, _allowedValue[from][msg.sender]);
 
         uint256 gonValue = gonsForBalance(value);
-        _gonBalances[from] = _gonBalances[from].sub(gonValue);
-        _gonBalances[to] = _gonBalances[to].add(gonValue);
+        _gonBalances[from] = _gonBalances[from] - gonValue;
+        _gonBalances[to] = _gonBalances[to] + gonValue;
 
-        require(balanceOf(from) >= debtBalances[from], "Debt: cannot transfer amount");
         emit Transfer(from, to, value);
         return true;
     }
@@ -206,7 +201,7 @@ contract sHectagon is IsHECTA, ERC20Permit {
     }
 
     function increaseAllowance(address spender, uint256 addedValue) public override returns (bool) {
-        _approve(msg.sender, spender, _allowedValue[msg.sender][spender].add(addedValue));
+        _approve(msg.sender, spender, _allowedValue[msg.sender][spender] + addedValue);
         return true;
     }
 
@@ -215,26 +210,9 @@ contract sHectagon is IsHECTA, ERC20Permit {
         if (subtractedValue >= oldValue) {
             _approve(msg.sender, spender, 0);
         } else {
-            _approve(msg.sender, spender, oldValue.sub(subtractedValue));
+            _approve(msg.sender, spender, oldValue - subtractedValue);
         }
         return true;
-    }
-
-    // this function is called by the treasury, and informs sHECTA of changes to debt.
-    // note that addresses with debt balances cannot transfer collateralized sHECTA
-    // until the debt has been repaid.
-    function changeDebt(
-        uint256 amount,
-        address debtor,
-        bool add
-    ) external override {
-        require(msg.sender == treasury, "Only treasury");
-        if (add) {
-            debtBalances[debtor] = debtBalances[debtor].add(amount);
-        } else {
-            debtBalances[debtor] = debtBalances[debtor].sub(amount);
-        }
-        require(debtBalances[debtor] <= balanceOf(debtor), "sHECTA: insufficient balance");
     }
 
     /* ========== INTERNAL FUNCTIONS ========== */
@@ -251,15 +229,15 @@ contract sHectagon is IsHECTA, ERC20Permit {
     /* ========== VIEW FUNCTIONS ========== */
 
     function balanceOf(address who) public view override(IERC20, ERC20) returns (uint256) {
-        return _gonBalances[who].div(_gonsPerFragment);
+        return _gonBalances[who] / _gonsPerFragment;
     }
 
     function gonsForBalance(uint256 amount) public view override returns (uint256) {
-        return amount.mul(_gonsPerFragment);
+        return amount * _gonsPerFragment;
     }
 
     function balanceForGons(uint256 gons) public view override returns (uint256) {
-        return gons.div(_gonsPerFragment);
+        return gons / _gonsPerFragment;
     }
 
     // toG converts an sHECTA balance to gHECTA terms. gHECTA is an 18 decimal token. balance given is in 18 decimal format.
@@ -275,10 +253,10 @@ contract sHectagon is IsHECTA, ERC20Permit {
     // Staking contract holds excess sHECTA
     function circulatingSupply() public view override returns (uint256) {
         return
-            _totalSupply
-                .sub(balanceOf(stakingContract))
-                .add(gHECTA.balanceFrom(IERC20(address(gHECTA)).totalSupply()))
-                .add(IStaking(stakingContract).supplyInWarmup());
+            _totalSupply -
+            balanceOf(stakingContract) +
+            gHECTA.balanceFrom(IERC20(address(gHECTA)).totalSupply()) +
+            IStaking(stakingContract).supplyInWarmup();
     }
 
     function index() public view override returns (uint256) {

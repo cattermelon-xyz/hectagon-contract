@@ -1,9 +1,13 @@
-// SPDX-License-Identifier: AGPL-3.0
-pragma solidity >=0.7.5;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+
 import "./interfaces/IBondDepository.sol";
 import "./interfaces/IStaking.sol";
 import "./interfaces/IUniswapV2Router.sol";
@@ -11,10 +15,6 @@ import "./interfaces/IUniswapV2Factory.sol";
 import "./interfaces/IUniswapV2Pair.sol";
 import "./interfaces/IWETH.sol";
 import "./libraries/Babylonian.sol";
-import "./interfaces/IERC20.sol";
-import "./libraries/SafeERC20.sol";
-import "./libraries/Address.sol";
-import "./interfaces/IBondDepository.sol";
 
 contract HectagonQuickBond is Ownable, Pausable {
     using SafeERC20 for IERC20;
@@ -32,8 +32,6 @@ contract HectagonQuickBond is Ownable, Pausable {
     address private constant wbnbTokenAddress = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
 
     uint256 private constant deadline = 0xf000000000000000000000000000000000000000000000000000000000000000;
-
-    constructor() {}
 
     // Emitted when `sender` successfully calls ZapBond
     event QuickBond(address indexed sender, address indexed token, uint256 tokensRec, address referral);
@@ -57,23 +55,25 @@ contract HectagonQuickBond is Ownable, Pausable {
         address _referral,
         uint256 _maxPrice,
         uint256 _bondId
-    ) external payable whenNotPaused returns (uint256 HectaRec) {
+    ) external payable whenNotPaused returns (uint256) {
         uint256 toInvest = _pullTokens(_fromTokenAddress, _amount, _shouldSellEntireBalance);
 
         uint256 LPBought = _performZapIn(_fromTokenAddress, _pairAddress, toInvest, _transferResidual, _path);
 
         _approveToken(_pairAddress, depo, LPBought);
         // purchase bond
-        (HectaRec, , ) = IBondDepository(depo).deposit(
+        IBondDepository.UserBond memory userBond = IBondDepository(depo).deposit(
             _bondId,
             LPBought,
             _maxPrice,
             msg.sender, // depositor
             _referral
         );
-        require(HectaRec >= _minTokenReceive, "High Slippage");
+        require(userBond.finalPayout >= _minTokenReceive, "High Slippage");
 
-        emit QuickBond(msg.sender, _pairAddress, HectaRec, _referral);
+        emit QuickBond(msg.sender, _pairAddress, userBond.finalPayout, _referral);
+
+        return userBond.finalPayout;
     }
 
     function quickStableBond(
@@ -85,20 +85,16 @@ contract HectagonQuickBond is Ownable, Pausable {
         address _referral,
         uint256 _maxPrice,
         uint256 _bondId
-    ) external payable whenNotPaused returns (uint256 HectaRec) {
+    ) external payable whenNotPaused returns (uint256) {
         uint256 toInvest = _pullTokens(_fromTokenAddress, _amount, _shouldSellEntireBalance);
 
-        uint256 tokensBought = _fillQuote(
-            _fromTokenAddress,
-            toInvest,
-            _path
-        );
+        uint256 tokensBought = _fillQuote(_fromTokenAddress, toInvest, _path);
 
         // make sure bond depo is approved to spend this contracts "principal"
         _approveToken(_principal, depo, tokensBought);
 
         // purchase bond
-        (HectaRec, , ) = IBondDepository(depo).deposit(
+        IBondDepository.UserBond memory userBond = IBondDepository(depo).deposit(
             _bondId,
             tokensBought,
             _maxPrice,
@@ -106,7 +102,8 @@ contract HectagonQuickBond is Ownable, Pausable {
             _referral
         );
 
-        emit QuickBond(msg.sender, _principal, HectaRec, _referral);
+        emit QuickBond(msg.sender, _principal, userBond.finalPayout, _referral);
+        return userBond.finalPayout;
     }
 
     function _getPairTokens(address _pairAddress) internal pure returns (address token0, address token1) {
