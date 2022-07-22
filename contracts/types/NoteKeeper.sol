@@ -63,7 +63,17 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
         uint256 finalPayout = give.toBuyer + _payout;
         uint256 daoAmount = give.toDaoCommunity + give.toDaoInvestment - give.toBuyer - give.toRefer;
 
+        // mint buyer's final payout and referer commission
+        treasury.mint(address(this), finalPayout + give.toRefer);
+
+        // note that only the buyer's final payout gets staked (referer commission are in HECTA)
+        staking.stake(address(this), finalPayout, true);
+
+        // mint Dao Community Fund and Dao Investment Fund, store in treasury
+        treasury.mint(address(treasury), daoAmount);
+
         // the new note is pushed to the user's array
+        // This logic needs to be executed after staking
         notes[_user].push(
             Note({
                 payout: gHECTA.balanceTo(finalPayout),
@@ -73,15 +83,6 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
                 marketID: _marketID
             })
         );
-
-        // mint buyer's final payout and referer commission
-        treasury.mint(address(this), finalPayout + give.toRefer);
-
-        // note that only the buyer's final payout gets staked (referer commission are in HECTA)
-        staking.stake(address(this), finalPayout, true);
-
-        // mint Dao Community Fund and Dao Investment Fund, store in treasury
-        treasury.mint(address(treasury), daoAmount);
 
         return (index_, give);
     }
