@@ -25,8 +25,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 };
 
 func.tags = [CONTRACTS.quickBond, "bonding"];
-func.dependencies = [
-    CONTRACTS.bondDepo,
-];
+func.dependencies = [CONTRACTS.bondDepo];
 
 export default func;

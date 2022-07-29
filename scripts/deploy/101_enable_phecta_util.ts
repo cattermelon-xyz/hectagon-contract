@@ -8,7 +8,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     const { deployments, getNamedAccounts, ethers } = hre;
     const { deployer } = await getNamedAccounts();
     const signer = await ethers.provider.getSigner(deployer);
-    console.log(deployer);
 
     const treasuryDeployment = await deployments.get(CONTRACTS.treasury);
     const treasury = HectagonTreasury__factory.connect(treasuryDeployment.address, signer);

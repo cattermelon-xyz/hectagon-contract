@@ -14,15 +14,11 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
     const authorityDeployment = await deployments.get(CONTRACTS.authority);
     const hectaDeployment = await deployments.get(CONTRACTS.hecta);
-    const sHectaDeployment = await deployments.get(CONTRACTS.sHecta);
-    const gHectaDeployment = await deployments.get(CONTRACTS.gHecta);
 
-    await deploy(CONTRACTS.staking, {
+    await deploy(CONTRACTS.gHecta, {
         from: deployer,
         args: [
             hectaDeployment.address,
-            sHectaDeployment.address,
-            gHectaDeployment.address,
             EPOCH_LENGTH_IN_SECONDS,
             FIRST_EPOCH_NUMBER,
             FIRST_EPOCH_TIME,
@@ -32,7 +28,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     });
 };
 
-func.tags = [CONTRACTS.staking, "staking"];
-func.dependencies = [CONTRACTS.hecta, CONTRACTS.sHecta, CONTRACTS.gHecta];
+func.tags = [CONTRACTS.gHecta, "staking"];
+func.dependencies = [CONTRACTS.hecta];
 
 export default func;

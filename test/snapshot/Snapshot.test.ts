@@ -48,7 +48,6 @@ describe("Snapshot", () => {
         });
 
         it("calculate initial weight correctly", async () => {
-            expect(await snapshot.getSHectaWeight()).equal(BigNumber.from("0"));
             expect(await snapshot.getGHectaWeight()).equal(BigNumber.from("0"));
         });
 
@@ -58,7 +57,6 @@ describe("Snapshot", () => {
             hectaCirculatingSupply.circulatingSupply.returns(BigNumber.from(String(60 * 10 ** 15))); // 60M Hecta
             gHecta.index.returns(BigNumber.from(String(2 * 10 ** 9))); // index = 2
 
-            expect(await snapshot.getSHectaWeight()).equal(BigNumber.from("1333"));
             expect(await snapshot.getGHectaWeight()).equal(BigNumber.from("2666"));
         });
 
@@ -68,7 +66,6 @@ describe("Snapshot", () => {
             hectaCirculatingSupply.circulatingSupply.returns(BigNumber.from(String(50 * 10 ** 15))); // 50M Hecta
             gHecta.index.returns(BigNumber.from(String(2 * 10 ** 9))); // index = 2
 
-            expect(await snapshot.getSHectaWeight()).equal(BigNumber.from("2000"));
             expect(await snapshot.getGHectaWeight()).equal(BigNumber.from("4000"));
         });
 
@@ -78,7 +75,6 @@ describe("Snapshot", () => {
             hectaCirculatingSupply.circulatingSupply.returns(BigNumber.from(String(50 * 10 ** 15))); // 50M hecta
             gHecta.index.returns(BigNumber.from(String(2 * 10 ** 9))); // index = 2
 
-            expect(await snapshot.getSHectaWeight()).equal(BigNumber.from("1600"));
             expect(await snapshot.getGHectaWeight()).equal(BigNumber.from("3200"));
         });
     });
