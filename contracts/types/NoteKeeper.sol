@@ -1,29 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
+import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import "../types/FrontEndRewarder.sol";
-import "../interfaces/IgHECTA.sol";
-import "../interfaces/IStaking.sol";
 import "../interfaces/ITreasury.sol";
 import "../interfaces/INoteKeeper.sol";
+import "../interfaces/IgHECTA.sol";
 
 abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
     mapping(address => Note[]) public notes; // user deposit data
     mapping(address => mapping(uint256 => address)) private noteTransfers; // change note ownership
 
-    IgHECTA internal immutable gHECTA;
-    IStaking internal immutable staking;
+    IgHECTA internal immutable gHecta;
     ITreasury internal treasury;
 
     constructor(
         IHectagonAuthority _authority,
         IERC20 _hecta,
         IgHECTA _ghecta,
-        IStaking _staking,
         ITreasury _treasury
     ) FrontEndRewarder(_authority, _hecta) {
-        gHECTA = _ghecta;
-        staking = _staking;
+        gHecta = _ghecta;
         treasury = _treasury;
     }
 
@@ -67,7 +64,7 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
         treasury.mint(address(this), finalPayout + give.toRefer);
 
         // note that only the buyer's final payout gets staked (referer commission are in HECTA)
-        staking.stake(address(this), finalPayout, true);
+        gHecta.deposit(finalPayout, address(this));
 
         // mint Dao Community Fund and Dao Investment Fund, store in treasury
         treasury.mint(address(treasury), daoAmount);
@@ -76,7 +73,7 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
         // This logic needs to be executed after staking
         notes[_user].push(
             Note({
-                payout: gHECTA.balanceTo(finalPayout),
+                payout: gHecta.convertToShares(finalPayout),
                 created: uint48(block.timestamp),
                 matured: _expiry,
                 redeemed: 0,
@@ -93,12 +90,15 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
      * @notice             redeem notes for user
      * @param _user        the user to redeem for
      * @param _indexes     the note indexes to redeem
-     * @return payout_     sum of payout sent, in gHECTA
+     * @param _unstake     option for redeem gHecta or Hecta
+     * @return sum of payout sent, in gHecta or Hecta
      */
     function redeem(
         address _user,
-        uint256[] memory _indexes
-    ) public override returns (uint256 payout_) {
+        uint256[] memory _indexes,
+        bool _unstake
+    ) public override returns (uint256) {
+        uint256 payout_;
         uint48 time = uint48(block.timestamp);
 
         for (uint256 i = 0; i < _indexes.length; i++) {
@@ -110,17 +110,23 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
             }
         }
 
-        gHECTA.transfer(_user, payout_); // send payout as gHECTA
+        if (_unstake) {
+            return gHecta.redeem(payout_, _user, address(this)); // send payout as hecta
+        } else {
+            gHecta.transfer(_user, payout_); // send payout as gHecta
+            return payout_;
+        }
     }
 
     /**
      * @notice             redeem all redeemable markets for user
      * @dev                if possible, query indexesFor() off-chain and input in redeem() to save gas
      * @param _user        user to redeem all notes for
-     * @return             sum of payout sent, in gHECTA
+     * @param _unstake     option for redeem gHecta or Hecta
+     * @return             sum of payout sent, in gHecta or Hecta
      */
-    function redeemAll(address _user) external returns (uint256) {
-        return redeem(_user, indexesFor(_user));
+    function redeemAll(address _user, bool _unstake) external returns (uint256) {
+        return redeem(_user, indexesFor(_user), _unstake);
     }
 
     /* ========== TRANSFER ========== */
@@ -184,7 +190,7 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
      * @notice             calculate amount available for claim for a single note
      * @param _user        the user that the note belongs to
      * @param _index       the index of the note in the user's array
-     * @return payout_     the payout due, in gHECTA
+     * @return payout_     the payout due, in gHecta
      * @return matured_    if the payout can be redeemed
      */
     function pendingFor(address _user, uint256 _index) public view override returns (uint256 payout_, bool matured_) {

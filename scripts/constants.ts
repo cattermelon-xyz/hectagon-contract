@@ -1,19 +1,15 @@
 export const CONTRACTS: Record<string, string> = {
     hecta: "HectagonERC20Token",
-    sHecta: "sHectagon",
-    gHecta: "gHECTA",
+    gHecta: "GovernanceHectagon",
     pHecta: "PHecta",
-    tHecta: "tHecta",
-    staking: "HectagonStaking",
+    tHecta: "THecta",
     distributor: "Distributor",
     treasury: "HectagonTreasury",
     bondDepo: "HectagonBondDepository",
     authority: "HectagonAuthority",
-    migrator: "HectagonTokenMigrator",
     circulatingSupply: "HectaCirculatingSupply",
-    redeemHelper: "RedeemHelper",
     snapshot: "Snapshot",
-    quickBond:"HectagonQuickBond"
+    quickBond: "HectagonQuickBond",
 };
 
 export const ADDRESSES: Record<string, string> = {

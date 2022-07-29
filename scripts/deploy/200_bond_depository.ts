@@ -11,7 +11,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     const authorityDeployment = await deployments.get(CONTRACTS.authority);
     const hectaDeployment = await deployments.get(CONTRACTS.hecta);
     const gHectaDeployment = await deployments.get(CONTRACTS.gHecta);
-    const stakingDeployment = await deployments.get(CONTRACTS.staking);
     const treasuryDeployment = await deployments.get(CONTRACTS.treasury);
 
     await deploy(CONTRACTS.bondDepo, {
@@ -20,7 +19,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
             authorityDeployment.address,
             hectaDeployment.address,
             gHectaDeployment.address,
-            stakingDeployment.address,
             treasuryDeployment.address,
         ],
         log: true,
@@ -29,12 +27,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 };
 
 func.tags = [CONTRACTS.bondDepo, "bonding"];
-func.dependencies = [
-    CONTRACTS.authority,
-    CONTRACTS.hecta,
-    CONTRACTS.gHecta,
-    CONTRACTS.staking,
-    CONTRACTS.treasury,
-];
+func.dependencies = [CONTRACTS.authority, CONTRACTS.hecta, CONTRACTS.gHecta, CONTRACTS.treasury];
 
 export default func;

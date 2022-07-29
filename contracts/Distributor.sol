@@ -15,7 +15,7 @@ contract Distributor is IDistributor, HectagonAccessControlled {
 
     /* ====== VARIABLES ====== */
     ITreasury private immutable treasury;
-    address private immutable staking;
+    address private immutable gHecta;
     IHectaCirculatingSupply public circulatingHectaContract;
 
     mapping(uint256 => Adjust) public adjustments;
@@ -41,25 +41,25 @@ contract Distributor is IDistributor, HectagonAccessControlled {
 
     constructor(
         address _treasury,
-        address _staking,
+        address _gHecta,
         address _authority,
-        address circulatingHectaContract_
+        address _circulatingHectaContract
     ) HectagonAccessControlled(IHectagonAuthority(_authority)) {
         require(_treasury != address(0), "Zero address: Treasury");
         treasury = ITreasury(_treasury);
-        require(_staking != address(0), "Zero address: Staking");
-        staking = _staking;
-        require(circulatingHectaContract_ != address(0), "Zero address: circulatingHectaContract");
-        circulatingHectaContract = IHectaCirculatingSupply(circulatingHectaContract_);
+        require(_gHecta != address(0), "Zero address: gHecta");
+        gHecta = _gHecta;
+        require(_circulatingHectaContract != address(0), "Zero address: circulatingHectaContract");
+        circulatingHectaContract = IHectaCirculatingSupply(_circulatingHectaContract);
     }
 
     /* ====== PUBLIC FUNCTIONS ====== */
 
     /**
-        @notice send epoch reward to staking contract
+        @notice send epoch reward to gHecta contract
      */
     function distribute() external override {
-        require(msg.sender == staking, "Only staking");
+        require(msg.sender == gHecta, "Only gHecta");
         // distribute rewards to each recipient
         for (uint256 i = 0; i < info.length; i++) {
             if (info[i].rate > 0) {
@@ -70,10 +70,10 @@ contract Distributor is IDistributor, HectagonAccessControlled {
     }
 
     function retrieveBounty() external override returns (uint256) {
-        require(msg.sender == staking, "Only staking");
-        // If the distributor bounty is > 0, mint it for the staking contract.
+        require(msg.sender == gHecta, "Only gHecta");
+        // If the distributor bounty is > 0, mint it for the gHecta contract.
         if (bounty > 0) {
-            treasury.mint(address(staking), bounty);
+            treasury.mint(gHecta, bounty);
         }
 
         return bounty;

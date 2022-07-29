@@ -9,7 +9,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 
     const treasuryDeployment = await deployments.get(CONTRACTS.treasury);
     const circulatingSupplyDeployment = await deployments.get(CONTRACTS.circulatingSupply);
-    const stakingDeployment = await deployments.get(CONTRACTS.staking);
+    const gHectaDeployment = await deployments.get(CONTRACTS.gHecta);
     const authorityDeployment = await deployments.get(CONTRACTS.authority);
 
     // TODO: firstEpochBlock is passed in but contract constructor param is called _nextEpochBlock
@@ -17,7 +17,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
         from: deployer,
         args: [
             treasuryDeployment.address,
-            stakingDeployment.address,
+            gHectaDeployment.address,
             authorityDeployment.address,
             circulatingSupplyDeployment.address,
         ],

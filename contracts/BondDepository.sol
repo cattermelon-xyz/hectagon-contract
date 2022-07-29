@@ -3,8 +3,10 @@ pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+
 import "./types/NoteKeeper.sol";
 import "./interfaces/IBondDepository.sol";
+import "./interfaces/IgHECTA.sol";
 
 /// @title Hectagon Bond Depository
 
@@ -50,12 +52,11 @@ contract HectagonBondDepository is IBondDepository, NoteKeeper {
     constructor(
         IHectagonAuthority _authority,
         IERC20 _hecta,
-        IgHECTA _ghecta,
-        IStaking _staking,
+        IgHECTA _gHecta,
         ITreasury _treasury
-    ) NoteKeeper(_authority, _hecta, _ghecta, _staking, _treasury) {
+    ) NoteKeeper(_authority, _hecta, _gHecta, _treasury) {
         // save gas for users by bulk approving stake() transactions
-        _hecta.approve(address(_staking), 1e45);
+        _hecta.approve(address(_gHecta), 1e45);
     }
 
     /**

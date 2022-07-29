@@ -3,7 +3,6 @@ pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./interfaces/IHectaCirculatingSupply.sol";
-import "./interfaces/IsHECTA.sol";
 import "./interfaces/IgHECTA.sol";
 
 contract Snapshot {
@@ -28,12 +27,8 @@ contract Snapshot {
         pHecta = IERC20(_pHecta);
         require(_tHecta != address(0), "Zero address: tHECTA");
         tHecta = IERC20(_tHecta);
-        require(_gHecta != address(0), "Zero address: gHECTA");
+        require(_gHecta != address(0), "Zero address: gHecta");
         gHecta = IgHECTA(_gHecta);
-    }
-
-    function getSHectaWeight() public view returns (uint256) {
-        return _caclulateHectaWeight();
     }
 
     function getGHectaWeight() public view returns (uint256) {
