@@ -3,7 +3,7 @@ const { expect } = require("chai");
 const { smock } = require("@defi-wonderland/smock");
 const { BigNumber } = require("ethers");
 
-describe("Bond Depository", async () => {
+describe.only("Bond Depository", async () => {
     const LARGE_APPROVAL = "100000000000000000000000000000000";
     // Initial mint for Frax, HECTA and DAI (10,000,000)
     const initialMint = "10000000000000000000000000";
@@ -13,8 +13,8 @@ describe("Bond Depository", async () => {
 
     let deployer, alice, bob, carol, partner;
     let erc20Factory;
+    let hectaFactory;
     let authFactory;
-    let gHectaFactory;
     let depositoryFactory;
 
     let auth;
@@ -22,8 +22,7 @@ describe("Bond Depository", async () => {
     let hecta;
     let depository;
     let treasury;
-    let gHECTA;
-    let staking;
+    let gHecta;
 
     let capacity = 100000e9;
     let initialPrice = 400e9;
@@ -51,28 +50,27 @@ describe("Bond Depository", async () => {
 
         authFactory = await ethers.getContractFactory("HectagonAuthority");
         erc20Factory = await smock.mock("MockERC20");
-        gHectaFactory = await smock.mock("MockGHecta");
+
+        hectaFactory = await smock.mock("MockHecta");
 
         depositoryFactory = await ethers.getContractFactory("HectagonBondDepository");
     });
 
     beforeEach(async () => {
-        dai = await erc20Factory.deploy("Dai", "DAI", 18);
+        dai = await erc20Factory.deploy("Dai", "DAI");
         auth = await authFactory.deploy(
             deployer.address,
             deployer.address,
             deployer.address,
             deployer.address
         );
-        hecta = await erc20Factory.deploy("Hectagon", "HECTA", 9);
+        hecta = await hectaFactory.deploy("Hectagon", "HECTA");
         treasury = await smock.fake("ITreasury");
-        gHECTA = await gHectaFactory.deploy("50000000000"); // Set index as 50
-        staking = await smock.fake("HectagonStaking");
+        gHecta = await smock.fake("GovernanceHectagon");
         depository = await depositoryFactory.deploy(
             auth.address,
             hecta.address,
-            gHECTA.address,
-            staking.address,
+            gHecta.address,
             treasury.address
         );
 
@@ -86,8 +84,8 @@ describe("Bond Depository", async () => {
         await dai.approve(treasury.address, initialDeposit);
         await hecta.mint(deployer.address, "10000000000000");
 
-        // Mint enough gHECTA to payout rewards
-        await gHECTA.mint(depository.address, "1000000000000000000000");
+        // Mint enough gHecta to payout rewards
+        // await gHecta.mint(depository.address, "1000000000000000000000");
 
         await hecta.connect(alice).approve(depository.address, LARGE_APPROVAL);
         await dai.connect(bob).approve(depository.address, LARGE_APPROVAL);
@@ -96,6 +94,7 @@ describe("Bond Depository", async () => {
         await depository.setReferTerm(carol.address, refPrecent, buyerPrecent);
 
         await dai.connect(alice).approve(depository.address, capacity);
+
         const block = await ethers.provider.getBlock("latest");
         conclusion = block.timestamp + timeToConclusion;
         // create the first bond
@@ -312,9 +311,9 @@ describe("Bond Depository", async () => {
         await network.provider.send("evm_increaseTime", [1000]);
         await depository.redeemAll(bob.address);
 
-        const bobBalance = Number(await gHECTA.balanceOf(bob.address));
-        expect(bobBalance).to.greaterThanOrEqual(Number(await gHECTA.balanceTo(expectedPayout)));
-        expect(bobBalance).to.lessThan(Number(await gHECTA.balanceTo(expectedPayout * 1.0001)));
+        const bobBalance = Number(await gHecta.balanceOf(bob.address));
+        expect(bobBalance).to.greaterThanOrEqual(Number(await gHecta.balanceTo(expectedPayout)));
+        expect(bobBalance).to.lessThan(Number(await gHecta.balanceTo(expectedPayout * 1.0001)));
     });
 
     describe("setReferTermCap", () => {

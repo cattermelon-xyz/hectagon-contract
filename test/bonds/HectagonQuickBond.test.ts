@@ -107,8 +107,8 @@ describe("HectagonQuickBond", () => {
         let busdHectaTotalSupply: BigNumber;
 
         beforeEach(async () => {
-            cake = await new MockERC20__factory(owner).deploy("Cake", "CAKE", 18);
-            busd = await new MockERC20__factory(owner).deploy("BUSD", "BUSD", 18);
+            cake = await new MockERC20__factory(owner).deploy("Cake", "CAKE");
+            busd = await new MockERC20__factory(owner).deploy("BUSD", "BUSD");
 
             await cake.mint(owner.address, largeAmount); // 1010 cake, so after add liquidity, owner have 10 cake left
             await busd.mint(owner.address, largeAmount);
@@ -498,8 +498,8 @@ describe("HectagonQuickBond", () => {
         const hectaPriceInBusd: BigNumber = busdToAddLiquidity.div(hectaToAddLiquidity);
 
         beforeEach(async () => {
-            cake = await new MockERC20__factory(owner).deploy("Cake", "CAKE", 18);
-            busd = await new MockERC20__factory(owner).deploy("BUSD", "BUSD", 18);
+            cake = await new MockERC20__factory(owner).deploy("Cake", "CAKE");
+            busd = await new MockERC20__factory(owner).deploy("BUSD", "BUSD");
 
             await cake.mint(owner.address, largeAmount); // 1010 cake, so after add liquidity, owner have 10 cake left
             await busd.mint(owner.address, largeAmount);
