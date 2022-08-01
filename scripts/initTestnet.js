@@ -11,7 +11,7 @@ async function main() {
     await treasury.enable("0", deployer.address);
     await treasury.enable("1", deployer.address);
 
-    await treasury.initialize(deployer.address, ethers.utils.parseUnits("30000", 9));
+    await treasury.initialize(deployer.address, ethers.utils.parseUnits("75000", 9));
 
     console.log("Treasury initialized");
 }
