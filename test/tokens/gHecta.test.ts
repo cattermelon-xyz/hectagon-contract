@@ -26,7 +26,7 @@ const parseShare = (share: string | number) =>
 
 const shareDecimalsToAssetDecimals = (share: BigNumber) => share.div(BigNumber.from("1000000000"));
 
-describe("Governance HECTA", () => {
+describe.only("Governance HECTA", () => {
     let owner: SignerWithAddress;
     let governor: SignerWithAddress;
     let guardian: SignerWithAddress;
@@ -108,6 +108,12 @@ describe("Governance HECTA", () => {
         });
     });
 
+    describe("nextEpoch()", () => {
+        it("when block timestamp is greater than epoch end, emits the LogEpoch event", async () => {
+            await expect(gHecta.nextEpoch()).to.emit(gHecta, "LogEpoch").withArgs(EPOCH_NUMBER, 0);
+        });
+    });
+
     it("multiple mint, deposit, redeem & withdrawal", async function () {
         await hecta.mint(alice.address, parseToken(4000));
         await hecta.mint(bob.address, parseToken(7001));
@@ -168,7 +174,7 @@ describe("Governance HECTA", () => {
 
         {
             // 4. Alice deposits 2000 tokens (mints 1333 shares) => totalAssets = 9000 + 2000
-            await gHecta.deposit(parseToken(2000), alice.address);
+            await gHecta.connect(alice).deposit(parseToken(2000), alice.address);
 
             expectAliceGHectaBalance = parseShare(6000) // previous gHecta.totalSupply()
                 .mul(assetDeciamlsToShareDeciamls(parseToken(2000))) // Alice deposits 2000 tokens
@@ -202,7 +208,7 @@ describe("Governance HECTA", () => {
             // 5. bob mints 2000 shares (costs 3001 assets)
             // NOTE: bob's assets spent got rounded up
             // NOTE: Alices's vault assets got rounded up
-            await gHecta.mint(parseShare(2000), bob.address);
+            await gHecta.connect(bob).mint(parseShare(2000), bob.address);
 
             expectTotalAssets = expectTotalAssets.add(
                 shareDecimalsToAssetDecimals(parseShare(2000))
@@ -331,6 +337,9 @@ describe("Governance HECTA", () => {
     });
 
     it("bountyHunter", async () => {
+        await hecta.mint(owner.address, parseToken(1000));
+        await gHecta.deposit(parseToken(1000), owner.address);
+        await increaseTime(EPOCH_LENGTH + 1);
         distributorFake.retrieveBounty.whenCalledWith().returns(parseToken(100));
         await hecta.mint(gHecta.address, parseToken(100));
         await gHecta.bountyHunter();

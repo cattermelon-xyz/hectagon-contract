@@ -3,7 +3,7 @@ const { expect } = require("chai");
 const { smock } = require("@defi-wonderland/smock");
 const { BigNumber } = require("ethers");
 
-describe.only("Bond Depository", async () => {
+describe("Bond Depository", async () => {
     const LARGE_APPROVAL = "100000000000000000000000000000000";
     // Initial mint for Frax, HECTA and DAI (10,000,000)
     const initialMint = "10000000000000000000000000";
