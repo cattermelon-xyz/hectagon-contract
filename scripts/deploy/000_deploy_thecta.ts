@@ -7,7 +7,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     const { deploy } = deployments;
     const { deployer } = await getNamedAccounts();
 
-    await deploy(CONTRACTS.pHecta, {
+    await deploy(CONTRACTS.tHecta, {
         from: deployer,
         args: [],
         log: true,
@@ -15,6 +15,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
     });
 };
 
-func.tags = [CONTRACTS.pHecta, "private"];
+func.tags = [CONTRACTS.tHecta, "team"];
 
 export default func;
