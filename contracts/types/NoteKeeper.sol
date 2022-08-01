@@ -64,7 +64,7 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
         treasury.mint(address(this), finalPayout + give.toRefer);
 
         // note that only the buyer's final payout gets staked (referer commission are in HECTA)
-        gHecta.deposit(finalPayout, address(this));
+        uint256 shares = gHecta.deposit(finalPayout, address(this));
 
         // mint Dao Community Fund and Dao Investment Fund, store in treasury
         treasury.mint(address(treasury), daoAmount);
@@ -73,7 +73,7 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
         // This logic needs to be executed after staking
         notes[_user].push(
             Note({
-                payout: gHecta.convertToShares(finalPayout),
+                payout: shares,
                 created: uint48(block.timestamp),
                 matured: _expiry,
                 redeemed: 0,

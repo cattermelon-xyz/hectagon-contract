@@ -99,7 +99,7 @@ contract GovernanceHectagon is ERC4626, HectagonAccessControlled {
             epoch.number++;
             uint256 previousAsset = totalAssets();
 
-            if (address(distributor) != address(0)) {
+            if (address(distributor) != address(0) && totalSupply() > 0) {
                 distributor.distribute();
                 bounty = distributor.retrieveBounty(); // Will mint HECTA for this contract if there exists a bounty
             }
