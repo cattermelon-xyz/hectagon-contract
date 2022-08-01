@@ -13,15 +13,15 @@ export const CONTRACTS: Record<string, string> = {
 };
 
 export const ADDRESSES: Record<string, string> = {
-    busd: "0x9e3F47234e72e222348552e028ceEB8f4C428d26",
-    treasury: "0xAB68495c9dDc4bE872f6e93ee2cd94183827F117",
+    busd: "0x0b1C9ac90Bff94e4a02813f46AcB0402290AC888",
+    treasury: "0x1Bd552B08B9D7ee239eBbAE747d210aEAA598620",
 };
 
 export const LARGE_APPROVAL = "100000000000000000000000000000000";
 
 export const EPOCH_LENGTH_IN_SECONDS = "28800"; // 8 hours
 export const FIRST_EPOCH_NUMBER = "0";
-export const FIRST_EPOCH_TIME = "1658291421";
+export const FIRST_EPOCH_TIME = "1659346200";
 
 // init system
 export const INITIAL_REWARD_RATE = "5000";
