@@ -4,7 +4,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import {
     MockERC20,
-    MockGHecta,
+    GovernanceHectagon,
     HectaCirculatingSupply,
     Snapshot,
     Snapshot__factory,
@@ -17,7 +17,7 @@ describe("Snapshot", () => {
     let hectaCirculatingSupply: FakeContract<HectaCirculatingSupply>;
     let pHecta: FakeContract<MockERC20>;
     let tHecta: FakeContract<MockERC20>;
-    let gHecta: FakeContract<MockGHecta>;
+    let gHecta: FakeContract<GovernanceHectagon>;
 
     let snapshot: Snapshot;
 
@@ -26,7 +26,7 @@ describe("Snapshot", () => {
         hectaCirculatingSupply = await smock.fake<HectaCirculatingSupply>("HectaCirculatingSupply");
         pHecta = await smock.fake<MockERC20>("MockERC20");
         tHecta = await smock.fake<MockERC20>("MockERC20");
-        gHecta = await smock.fake<MockGHecta>("MockGHecta");
+        gHecta = await smock.fake<GovernanceHectagon>("GovernanceHectagon");
 
         snapshot = await new Snapshot__factory(owner).deploy(
             hectaCirculatingSupply.address,
