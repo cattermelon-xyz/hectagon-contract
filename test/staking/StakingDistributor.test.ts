@@ -101,15 +101,15 @@ describe("Distributor", () => {
 
             it("can only be called by the staking contract", async () => {
                 await expect(distributor.connect(governor).distribute()).to.be.revertedWith(
-                    "Only staking"
+                    "Only gHecta"
                 );
 
                 await expect(distributor.connect(guardian).distribute()).to.be.revertedWith(
-                    "Only staking"
+                    "Only gHecta"
                 );
 
                 await expect(distributor.connect(owner).distribute()).to.be.revertedWith(
-                    "Only staking"
+                    "Only gHecta"
                 );
             });
 

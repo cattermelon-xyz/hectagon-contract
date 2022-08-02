@@ -1,73 +1,72 @@
-const { ethers, network } = require("hardhat");
-const { expect } = require("chai");
-const { smock } = require("@defi-wonderland/smock");
-const { BigNumber } = require("ethers");
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import chai, { expect, util } from "chai";
+import { ethers, network } from "hardhat";
+import { FakeContract, smock } from "@defi-wonderland/smock";
+import {
+    HectagonAuthority,
+    HectagonAuthority__factory,
+    HectagonBondDepository,
+    HectagonBondDepository__factory,
+    ITreasury,
+    MockERC20,
+    MockERC20__factory,
+    GovernanceHectagon,
+    MockHecta,
+    MockHecta__factory,
+} from "../../types";
+import { BigNumber, utils } from "ethers";
 
-describe("Bond Depository", async () => {
+chai.use(smock.matchers);
+
+describe("Bond Depository", () => {
     const LARGE_APPROVAL = "100000000000000000000000000000000";
-    // Initial mint for Frax, HECTA and DAI (10,000,000)
-    const initialMint = "10000000000000000000000000";
+    const initialMint = utils.parseEther("10000000");
     const initialDeposit = "1000000000000000000000000";
 
-    // Increase timestamp by amount determined by `offset`
+    let deployer: SignerWithAddress;
+    let alice: SignerWithAddress;
+    let bob: SignerWithAddress;
+    let carol: SignerWithAddress;
+    let partner: SignerWithAddress;
 
-    let deployer, alice, bob, carol, partner;
-    let erc20Factory;
-    let hectaFactory;
-    let authFactory;
-    let depositoryFactory;
+    let auth: HectagonAuthority;
+    let busd: MockERC20;
+    let hecta: MockHecta;
+    let depository: HectagonBondDepository;
+    let treasury: FakeContract<ITreasury>;
+    let gHecta: FakeContract<GovernanceHectagon>;
 
-    let auth;
-    let dai;
-    let hecta;
-    let depository;
-    let treasury;
-    let gHecta;
+    const capacity = 100000e9;
+    const initialPrice = 400e9;
+    const buffer = 2e5;
 
-    let capacity = 100000e9;
-    let initialPrice = 400e9;
-    let buffer = 2e5;
+    const vesting = 100;
+    const timeToConclusion = 60 * 60 * 24;
+    let conclusion: number;
 
-    let vesting = 100;
-    let timeToConclusion = 60 * 60 * 24;
-    let conclusion;
+    const depositInterval = 60 * 60 * 4;
+    const tuneInterval = 60 * 60;
 
-    let depositInterval = 60 * 60 * 4;
-    let tuneInterval = 60 * 60;
+    const refPrecent = 500;
+    const buyerPrecent = 100;
+    const daoInvestmentPercent = 10000;
+    const daoRewardPoolsPercent = 10000;
 
-    let refPrecent = 500;
-    let buyerPrecent = 100;
-    let daoInvestmentPercent = 10000;
-    let daoRewardPoolsPercent = 10000;
-
-    var bid = 0;
-    /**
-     * Everything in this block is only run once before all tests.
-     * This is the home for setup methods
-     */
-    before(async () => {
-        [deployer, alice, bob, carol, partner] = await ethers.getSigners();
-
-        authFactory = await ethers.getContractFactory("HectagonAuthority");
-        erc20Factory = await smock.mock("MockERC20");
-
-        hectaFactory = await smock.mock("MockHecta");
-
-        depositoryFactory = await ethers.getContractFactory("HectagonBondDepository");
-    });
+    const bid = 0;
 
     beforeEach(async () => {
-        dai = await erc20Factory.deploy("Dai", "DAI");
-        auth = await authFactory.deploy(
+        [deployer, alice, bob, carol, partner] = await ethers.getSigners();
+        busd = await new MockERC20__factory(deployer).deploy("Busd", "BUSD");
+        auth = await new HectagonAuthority__factory(deployer).deploy(
             deployer.address,
             deployer.address,
             deployer.address,
             deployer.address
         );
-        hecta = await hectaFactory.deploy("Hectagon", "HECTA");
-        treasury = await smock.fake("ITreasury");
-        gHecta = await smock.fake("GovernanceHectagon");
-        depository = await depositoryFactory.deploy(
+        hecta = await new MockHecta__factory(deployer).deploy("hecta", "HECTA");
+        treasury = await smock.fake<ITreasury>("ITreasury");
+        gHecta = await smock.fake<GovernanceHectagon>("GovernanceHectagon");
+        depository = await new HectagonBondDepository__factory(deployer).deploy(
             auth.address,
             hecta.address,
             gHecta.address,
@@ -75,31 +74,31 @@ describe("Bond Depository", async () => {
         );
 
         // Setup for each component
-        await dai.mint(bob.address, initialMint);
+        await busd.connect(deployer).mint(bob.address, initialMint);
 
         // To get past HECTA contract guards
         await auth.pushVault(treasury.address, true);
 
-        await dai.mint(deployer.address, initialDeposit);
-        await dai.approve(treasury.address, initialDeposit);
-        await hecta.mint(deployer.address, "10000000000000");
+        await busd.connect(deployer).mint(deployer.address, initialDeposit);
+        await busd.connect(deployer).approve(treasury.address, initialDeposit);
+        await hecta.connect(deployer).mint(deployer.address, "10000000000000");
 
         // Mint enough gHecta to payout rewards
         // await gHecta.mint(depository.address, "1000000000000000000000");
 
         await hecta.connect(alice).approve(depository.address, LARGE_APPROVAL);
-        await dai.connect(bob).approve(depository.address, LARGE_APPROVAL);
+        await busd.connect(bob).approve(depository.address, LARGE_APPROVAL);
 
         await depository.setDaoRewards(daoInvestmentPercent, daoRewardPoolsPercent);
         await depository.setReferTerm(carol.address, refPrecent, buyerPrecent);
 
-        await dai.connect(alice).approve(depository.address, capacity);
+        await busd.connect(alice).approve(depository.address, capacity);
 
         const block = await ethers.provider.getBlock("latest");
         conclusion = block.timestamp + timeToConclusion;
         // create the first bond
         await depository.create(
-            dai.address,
+            busd.address,
             [capacity, initialPrice, buffer],
             [false, true],
             [vesting, conclusion],
@@ -112,20 +111,20 @@ describe("Bond Depository", async () => {
     });
 
     it("should conclude in correct amount of time", async () => {
-        let [, , , concludes] = await depository.terms(bid);
+        const [, , , concludes] = await depository.terms(bid);
         expect(concludes).to.equal(conclusion);
-        let [, , length, , , ,] = await depository.metadata(bid);
+        const [, , length, , , ,] = await depository.metadata(bid);
         // timestamps are a bit inaccurate with tests
-        var upperBound = timeToConclusion * 1.0033;
-        var lowerBound = timeToConclusion * 0.9967;
+        const upperBound = timeToConclusion * 1.0033;
+        const lowerBound = timeToConclusion * 0.9967;
         expect(Number(length)).to.be.greaterThan(lowerBound);
         expect(Number(length)).to.be.lessThan(upperBound);
     });
 
     it("should set max payout to correct % of capacity", async () => {
-        let [, , , , maxPayout, ,] = await depository.markets(bid);
-        var upperBound = (capacity * 1.0033) / 6;
-        var lowerBound = (capacity * 0.9967) / 6;
+        const [, , , , maxPayout, ,] = await depository.markets(bid);
+        const upperBound = (capacity * 1.0033) / 6;
+        const lowerBound = (capacity * 0.9967) / 6;
         expect(Number(maxPayout)).to.be.greaterThan(lowerBound);
         expect(Number(maxPayout)).to.be.lessThan(upperBound);
     });
@@ -133,13 +132,13 @@ describe("Bond Depository", async () => {
     it("should return IDs of all markets", async () => {
         // create a second bond
         await depository.create(
-            dai.address,
+            busd.address,
             [capacity, initialPrice, buffer],
             [false, true],
             [vesting, conclusion],
             [depositInterval, tuneInterval]
         );
-        let [first, second] = await depository.liveMarkets();
+        const [first, second] = await depository.liveMarkets();
         expect(Number(first)).to.equal(0);
         expect(Number(second)).to.equal(1);
     });
@@ -147,7 +146,7 @@ describe("Bond Depository", async () => {
     it("should update IDs of markets", async () => {
         // create a second bond
         await depository.create(
-            dai.address,
+            busd.address,
             [capacity, initialPrice, buffer],
             [false, true],
             [vesting, conclusion],
@@ -160,35 +159,35 @@ describe("Bond Depository", async () => {
     });
 
     it("should include ID in live markets for quote token", async () => {
-        const [id] = await depository.liveMarketsFor(dai.address);
+        const [id] = await depository.liveMarketsFor(busd.address);
         expect(Number(id)).to.equal(bid);
     });
 
     it("should start with price at initial price", async () => {
-        let lowerBound = initialPrice * 0.9999;
+        const lowerBound = initialPrice * 0.9999;
         expect(Number(await depository.marketPrice(bid))).to.be.greaterThan(lowerBound);
     });
 
     it("should give accurate payout for price", async () => {
-        let price = await depository.marketPrice(bid);
-        let amount = "10000000000000000000000"; // 10,000
-        let expectedPayout = amount / price;
-        let lowerBound = expectedPayout * 0.9999;
+        const price = await depository.marketPrice(bid);
+        const amount = "10000000000000000000000"; // 10,000
+        const expectedPayout = Number(amount) / Number(price);
+        const lowerBound = expectedPayout * 0.9999;
         expect(Number(await depository.payoutFor(amount, 0))).to.be.greaterThan(lowerBound);
     });
 
     it("should decay debt", async () => {
-        let [, , , totalDebt, , ,] = await depository.markets(0);
+        const [, , , totalDebt, , ,] = await depository.markets(0);
 
         await network.provider.send("evm_increaseTime", [100]);
         await depository.connect(bob).deposit(bid, "0", initialPrice, bob.address, carol.address);
 
-        let [, , , newTotalDebt, , ,] = await depository.markets(0);
+        const [, , , newTotalDebt, , ,] = await depository.markets(0);
         expect(Number(totalDebt)).to.be.greaterThan(Number(newTotalDebt));
     });
 
     it("should not start adjustment if ahead of schedule", async () => {
-        let amount = "650000000000000000000000"; // 10,000
+        const amount = "650000000000000000000000"; // 10,000
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice * 2, bob.address, carol.address);
@@ -200,50 +199,50 @@ describe("Bond Depository", async () => {
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice * 2, bob.address, carol.address);
-        let [, , , active] = await depository.adjustments(bid);
+        const [, , , active] = await depository.adjustments(bid);
         expect(Boolean(active)).to.equal(false);
     });
 
     it("should start adjustment if behind schedule", async () => {
         await network.provider.send("evm_increaseTime", [tuneInterval]);
-        let amount = "10000000000000000000000"; // 10,000
+        const amount = "10000000000000000000000"; // 10,000
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
-        let [, , , active] = await depository.adjustments(bid);
+        const [, , , active] = await depository.adjustments(bid);
         expect(Boolean(active)).to.equal(true);
     });
 
     it("adjustment should lower control variable by change in tune interval if behind", async () => {
         await network.provider.send("evm_increaseTime", [tuneInterval]);
-        let [, controlVariable, , ,] = await depository.terms(bid);
-        let amount = "10000000000000000000000"; // 10,000
+        const [, controlVariable, , ,] = await depository.terms(bid);
+        const amount = "10000000000000000000000"; // 10,000
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
         await network.provider.send("evm_increaseTime", [tuneInterval]);
-        let [change] = await depository.adjustments(bid);
+        const [change] = await depository.adjustments(bid);
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
-        let [, newControlVariable, , ,] = await depository.terms(bid);
+        const [, newControlVariable, , ,] = await depository.terms(bid);
         expect(newControlVariable).to.equal(controlVariable.sub(change));
     });
 
     it("adjustment should lower control variable by half of change in half of a tune interval", async () => {
         await network.provider.send("evm_increaseTime", [tuneInterval]);
-        let [, controlVariable, , ,] = await depository.terms(bid);
-        let amount = "10000000000000000000000"; // 10,000
+        const [, controlVariable, , ,] = await depository.terms(bid);
+        const amount = "10000000000000000000000"; // 10,000
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
-        let [change] = await depository.adjustments(bid);
+        const [change] = await depository.adjustments(bid);
         await network.provider.send("evm_increaseTime", [tuneInterval / 2]);
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
-        let [, newControlVariable, , ,] = await depository.terms(bid);
-        let lowerBound = (controlVariable - change / 2) * 0.999;
+        const [, newControlVariable, , ,] = await depository.terms(bid);
+        const lowerBound = (Number(controlVariable) - Number(change) / 2) * 0.999;
         expect(Number(newControlVariable)).to.lessThanOrEqual(
             Number(controlVariable.sub(change.div(2)))
         );
@@ -253,11 +252,11 @@ describe("Bond Depository", async () => {
     it("adjustment should continue lowering over multiple deposits in same tune interval", async () => {
         await network.provider.send("evm_increaseTime", [tuneInterval]);
         const [, controlVariable, , ,] = await depository.terms(bid);
-        let amount = "10000000000000000000000"; // 10,000
+        const amount = "10000000000000000000000"; // 10,000
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
-        let [change] = await depository.adjustments(bid);
+        const [change] = await depository.adjustments(bid);
 
         await network.provider.send("evm_increaseTime", [tuneInterval / 2]);
         await depository
@@ -268,12 +267,12 @@ describe("Bond Depository", async () => {
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
-        let [, newControlVariable, , ,] = await depository.terms(bid);
+        const [, newControlVariable, , ,] = await depository.terms(bid);
         expect(newControlVariable).to.equal(controlVariable.sub(change));
     });
 
     it("should allow a deposit", async () => {
-        let amount = "10000000000000000000000"; // 10,000
+        const amount = "10000000000000000000000"; // 10,000
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
@@ -282,38 +281,35 @@ describe("Bond Depository", async () => {
     });
 
     it("should not allow a deposit greater than max payout", async () => {
-        let amount = "6700000000000000000000000"; // 6.7m (400 * 10000 / 6 + 0.5%)
+        const amount = "6700000000000000000000000"; // 6.7m (400 * 10000 / 6 + 0.5%)
         await expect(
             depository.connect(bob).deposit(bid, amount, initialPrice, bob.address, carol.address)
         ).to.be.revertedWith("Depository: max size exceeded");
     });
 
     it("should not redeem before vested", async () => {
-        let balance = await hecta.balanceOf(bob.address);
-        let amount = "10000000000000000000000"; // 10,000
+        const balance = await hecta.balanceOf(bob.address);
+        const amount = "10000000000000000000000"; // 10,000
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
-        await depository.connect(bob).redeemAll(bob.address);
+        await depository.connect(bob).redeemAll(bob.address, false);
         expect(await hecta.balanceOf(bob.address)).to.equal(balance);
     });
 
     it("should redeem after vested", async () => {
-        let amount = "10000000000000000000000"; // 10,000
-        let [expectedPayout] = await depository
-            .connect(bob)
-            .callStatic.deposit(bid, amount, initialPrice, bob.address, carol.address);
-
+        const amount = "10000000000000000000000"; // 10,000
+        const gHectaMockAmount = utils.parseEther("1000");
+        gHecta.deposit.returns(gHectaMockAmount);
         await depository
             .connect(bob)
             .deposit(bid, amount, initialPrice, bob.address, carol.address);
 
         await network.provider.send("evm_increaseTime", [1000]);
-        await depository.redeemAll(bob.address);
-
-        const bobBalance = Number(await gHecta.balanceOf(bob.address));
-        expect(bobBalance).to.greaterThanOrEqual(Number(await gHecta.balanceTo(expectedPayout)));
-        expect(bobBalance).to.lessThan(Number(await gHecta.balanceTo(expectedPayout * 1.0001)));
+        await depository.redeemAll(bob.address, false);
+        gHecta.balanceOf.whenCalledWith(bob.address).returns(gHectaMockAmount);
+        const bobBalance = await gHecta.balanceOf(bob.address);
+        expect(bobBalance).to.eq(gHectaMockAmount);
     });
 
     describe("setReferTermCap", () => {
@@ -332,9 +328,9 @@ describe("Bond Depository", async () => {
     });
 
     it("should give correct rewards to referrer, dao (treasury) and buyer", async () => {
-        let refBalance = await hecta.balanceOf(carol.address);
-        let amount = BigNumber.from("10000000000000000000000"); // 10,000
-        let [finalPayout] = await depository
+        const refBalance = await hecta.balanceOf(carol.address);
+        const amount = BigNumber.from("10000000000000000000000"); // 10,000
+        const [finalPayout] = await depository
             .connect(bob)
             .callStatic.deposit(bid, amount, initialPrice, bob.address, carol.address);
         await depository
@@ -344,7 +340,7 @@ describe("Bond Depository", async () => {
         // Mint hecta for depository to payout reward
         await hecta.mint(depository.address, "1000000000000000000000");
 
-        let refExpected = Number(refBalance) + Number((Number(payout) * refPrecent) / 1e4);
+        const refExpected = Number(refBalance) + Number((Number(payout) * refPrecent) / 1e4);
         await depository.connect(carol).getReward();
 
         const carolReward = Number(await hecta.balanceOf(carol.address));
@@ -357,7 +353,7 @@ describe("Bond Depository", async () => {
             const partnerMaxAmount = ethers.utils.parseUnits("100", 9);
             const partnerPercent = 1000; // 10%
             await depository.setPartnerTerm(partner.address, partnerMaxAmount, partnerPercent);
-            let amount = ethers.utils.parseEther("1");
+            const amount = ethers.utils.parseEther("1");
             const marketPrice = await depository.marketPrice(bid);
             const expectedPayout = amount.div(marketPrice);
 
@@ -365,7 +361,7 @@ describe("Bond Depository", async () => {
                 expectedPayout.mul(partnerPercent).div(1e4)
             );
 
-            let [finalPayout] = await depository
+            const [finalPayout] = await depository
                 .connect(bob)
                 .callStatic.deposit(bid, amount, initialPrice, partner.address, partner.address);
             const payout = Number(finalPayout) / (1 + partnerPercent / 1e4);
@@ -391,12 +387,12 @@ describe("Bond Depository", async () => {
             const partnerMaxAmount = ethers.utils.parseUnits("1", 9);
             const partnerPercent = 1000; // 10%
             await depository.setPartnerTerm(partner.address, partnerMaxAmount, partnerPercent);
-            let amount = ethers.utils.parseEther("10000");
+            const amount = ethers.utils.parseEther("10000");
             const marketPrice = await depository.marketPrice(bid);
             const expectedPayout = amount.div(marketPrice);
 
             const expectedFinalPayout = expectedPayout.add(partnerMaxAmount);
-            let [finalPayout] = await depository
+            const [finalPayout] = await depository
                 .connect(bob)
                 .callStatic.deposit(bid, amount, initialPrice, partner.address, carol.address);
             await depository
@@ -411,9 +407,9 @@ describe("Bond Depository", async () => {
     });
 
     it("should decay a max payout in target deposit interval", async () => {
-        let [, , , , , maxPayout, ,] = await depository.markets(bid);
-        let price = await depository.marketPrice(bid);
-        let amount = maxPayout * price;
+        const [, , , , , maxPayout, ,] = await depository.markets(bid);
+        const price = await depository.marketPrice(bid);
+        const amount = maxPayout.mul(price);
         await depository.connect(bob).deposit(
             bid,
             amount, // amount for max payout
@@ -422,7 +418,7 @@ describe("Bond Depository", async () => {
             carol.address
         );
         await network.provider.send("evm_increaseTime", [depositInterval]);
-        let newPrice = await depository.marketPrice(bid);
+        const newPrice = await depository.marketPrice(bid);
         expect(Number(newPrice)).to.be.lessThan(Number(initialPrice));
     });
 

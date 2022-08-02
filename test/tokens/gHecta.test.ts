@@ -26,7 +26,7 @@ const parseShare = (share: string | number) =>
 
 const shareDecimalsToAssetDecimals = (share: BigNumber) => share.div(BigNumber.from("1000000000"));
 
-describe.only("Governance HECTA", () => {
+describe("Governance HECTA", () => {
     let owner: SignerWithAddress;
     let governor: SignerWithAddress;
     let guardian: SignerWithAddress;
