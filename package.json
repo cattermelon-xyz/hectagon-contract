@@ -1,7 +1,7 @@
 {
-  "name": "olympus-contracts",
+  "name": "hectagon-contracts",
   "version": "1.0.0",
-  "description": "Smart Contracts for Olympus",
+  "description": "Smart Contracts for Hectagon",
   "directories": {
     "test": "test"
   },
@@ -71,11 +71,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OlympusDAO/olympus-contracts.git"
+    "url": "git+https://github.com/hectagon-finance/hectagon-contract.git"
   },
   "author": "",
   "bugs": {
-    "url": "https://github.com/OlympusDAO/olympus-contracts/issues"
+    "url": "https://github.com/hectagon-finance/hectagon-contract/issues"
   },
-  "homepage": "https://github.com/OlympusDAO/olympus-contracts#readme"
+  "homepage": "https://github.com/hectagon-finance/hectagon-contract#readme"
 }
