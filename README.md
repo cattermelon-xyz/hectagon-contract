@@ -1,4 +1,4 @@
-# <img src="docs/HectagonLightIcon.png" alt="OpenZeppelin" height="40px">
+# <img src="docs/HectagonLightIcon.png" alt="Hectagon" height="40px">
 ## Core Smart Contracts
 
 The world’s first DAO-governed Web3 Venture Capital funding platform for everyone
@@ -10,7 +10,7 @@ The world’s first DAO-governed Web3 Venture Capital funding platform for every
 
 ## Overview
 
-# <img src="docs/ProductOverview.png" alt="OpenZeppelin">
+# <img src="docs/ProductOverview.png" alt="Hectagon">
 
 ###  🔧 Setting up local development
 
