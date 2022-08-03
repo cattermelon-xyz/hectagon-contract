@@ -13,7 +13,7 @@ export const CONTRACTS: Record<string, string> = {
 };
 
 export const ADDRESSES: Record<string, string> = {
-    busd: "0x9e3F47234e72e222348552e028ceEB8f4C428d26",
+    busd: "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
     treasury: "0x4250EA413cB2fD4A8fDc5cC73283d0070a52FB91",
 };
 

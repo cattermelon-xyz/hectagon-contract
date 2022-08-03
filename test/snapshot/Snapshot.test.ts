@@ -13,6 +13,7 @@ const { BigNumber } = ethers;
 
 describe("Snapshot", () => {
     let owner: SignerWithAddress;
+    let other: SignerWithAddress;
 
     let hectaCirculatingSupply: FakeContract<HectaCirculatingSupply>;
     let pHecta: FakeContract<MockERC20>;
@@ -22,7 +23,7 @@ describe("Snapshot", () => {
     let snapshot: Snapshot;
 
     beforeEach(async () => {
-        [owner] = await ethers.getSigners();
+        [owner, other] = await ethers.getSigners();
         hectaCirculatingSupply = await smock.fake<HectaCirculatingSupply>("HectaCirculatingSupply");
         pHecta = await smock.fake<MockERC20>("MockERC20");
         tHecta = await smock.fake<MockERC20>("MockERC20");
@@ -43,12 +44,12 @@ describe("Snapshot", () => {
             expect(await snapshot.gHecta()).equal(gHecta.address);
         });
         it("return PHecta and tHECTA weight correctly", async () => {
-            expect(await snapshot.PHECTA_WEIGHT()).equal(BigNumber.from("500"));
-            expect(await snapshot.THECTA_WEIGHT()).equal(BigNumber.from("500"));
+            expect(await snapshot.pHectaWeight()).equal(BigNumber.from("500"));
+            expect(await snapshot.tHectaWeight()).equal(BigNumber.from("500"));
         });
 
         it("calculate initial weight correctly", async () => {
-            expect(await snapshot.getGHectaWeight()).equal(BigNumber.from("0"));
+            expect(await snapshot.gHectaWeight()).equal(BigNumber.from("0"));
         });
 
         it("calculate Hecta weight correctly", async () => {
@@ -57,7 +58,7 @@ describe("Snapshot", () => {
             hectaCirculatingSupply.circulatingSupply.returns(BigNumber.from(String(60 * 10 ** 15))); // 60M Hecta
             gHecta.index.returns(BigNumber.from(String(2 * 10 ** 9))); // index = 2
 
-            expect(await snapshot.getGHectaWeight()).equal(BigNumber.from("2666"));
+            expect(await snapshot.gHectaWeight()).equal(BigNumber.from("2666"));
         });
 
         it("calculate Hecta weight correctly when pHecta and tHecta is zero", async () => {
@@ -66,7 +67,7 @@ describe("Snapshot", () => {
             hectaCirculatingSupply.circulatingSupply.returns(BigNumber.from(String(50 * 10 ** 15))); // 50M Hecta
             gHecta.index.returns(BigNumber.from(String(2 * 10 ** 9))); // index = 2
 
-            expect(await snapshot.getGHectaWeight()).equal(BigNumber.from("4000"));
+            expect(await snapshot.gHectaWeight()).equal(BigNumber.from("4000"));
         });
 
         it("calculate Hecta weight correctly when pHecta and tHecta is maximum", async () => {
@@ -75,7 +76,26 @@ describe("Snapshot", () => {
             hectaCirculatingSupply.circulatingSupply.returns(BigNumber.from(String(50 * 10 ** 15))); // 50M hecta
             gHecta.index.returns(BigNumber.from(String(2 * 10 ** 9))); // index = 2
 
-            expect(await snapshot.getGHectaWeight()).equal(BigNumber.from("3200"));
+            expect(await snapshot.gHectaWeight()).equal(BigNumber.from("3200"));
+        });
+    });
+
+    describe("setAddresses", () => {
+        it("only owner can set", async () => {
+            const randomAddress = "0xf592FE7c105f4F2EF212AEb26aCb9740804cffC7";
+            const tx = snapshot
+                .connect(other)
+                .setAddresses(randomAddress, randomAddress, randomAddress, randomAddress);
+            expect(tx).reverted;
+        });
+
+        it("owner set successfully", async () => {
+            const randomAddress = "0xf592FE7c105f4F2EF212AEb26aCb9740804cffC7";
+            await snapshot.setAddresses(randomAddress, randomAddress, randomAddress, randomAddress);
+            expect(await snapshot.hectaCirculatingSupply()).equal(randomAddress);
+            expect(await snapshot.pHecta()).equal(randomAddress);
+            expect(await snapshot.tHecta()).equal(randomAddress);
+            expect(await snapshot.gHecta()).equal(randomAddress);
         });
     });
 });
