@@ -1,5 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
+import { utils } from "ethers";
 import { ethers } from "hardhat";
 
 import {
@@ -14,7 +15,7 @@ describe("HectagonTest", () => {
     let bob: SignerWithAddress;
     let alice: SignerWithAddress;
     let hecta: HectagonERC20Token;
-
+    const initMaxMint = utils.parseUnits("20000000", 9); // 20,000,000
     beforeEach(async () => {
         [deployer, vault, bob, alice] = await ethers.getSigners();
 
@@ -33,6 +34,7 @@ describe("HectagonTest", () => {
         expect(await hecta.name()).to.equal("Hectagon");
         expect(await hecta.symbol()).to.equal("HECTA");
         expect(await hecta.decimals()).to.equal(9);
+        expect(await hecta.maxMint()).to.equal(initMaxMint);
     });
 
     describe("mint", () => {
@@ -72,6 +74,23 @@ describe("HectagonTest", () => {
             await expect(hecta.connect(alice).burn(16)).to.be.revertedWith(
                 "ERC20: burn amount exceeds balance"
             );
+        });
+    });
+
+    describe("max Mint", () => {
+        it("governor can setMaxMint correctlly", async () => {
+            const expectedOutput = ethers.utils.parseUnits("10", 9);
+            await hecta.setMaxMint(expectedOutput);
+            const maxMint = await hecta.maxMint();
+            await expect(expectedOutput).to.be.eq(maxMint);
+        });
+
+        it("can't mint when hit maxMint", async () => {
+            const expectedOutput = ethers.utils.parseUnits("10", 9);
+            await hecta.setMaxMint(expectedOutput);
+            const amount = expectedOutput.add("10");
+            const tx = hecta.connect(vault).mint(deployer.address, amount);
+            await expect(tx).to.revertedWith("HECTA: mint amount exceeds maxMint");
         });
     });
 });

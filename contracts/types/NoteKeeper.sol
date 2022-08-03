@@ -72,13 +72,7 @@ abstract contract NoteKeeper is INoteKeeper, FrontEndRewarder {
         // the new note is pushed to the user's array
         // This logic needs to be executed after staking
         notes[_user].push(
-            Note({
-                payout: shares,
-                created: uint48(block.timestamp),
-                matured: _expiry,
-                redeemed: 0,
-                marketID: _marketID
-            })
+            Note({payout: shares, created: uint48(block.timestamp), matured: _expiry, redeemed: 0, marketID: _marketID})
         );
 
         return (index_, give);
