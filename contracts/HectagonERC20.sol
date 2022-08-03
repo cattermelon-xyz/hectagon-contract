@@ -6,6 +6,8 @@ import "./interfaces/IHECTA.sol";
 import "./types/HectagonAccessControlled.sol";
 
 contract HectagonERC20Token is ERC20Permit, IHECTA, HectagonAccessControlled {
+    uint256 public maxMint = 20_000_000 * 1e9;
+
     constructor(address _authority)
         ERC20("Hectagon", "HECTA")
         ERC20Permit("Hectagon")
@@ -17,6 +19,7 @@ contract HectagonERC20Token is ERC20Permit, IHECTA, HectagonAccessControlled {
     }
 
     function mint(address account_, uint256 amount_) external override onlyVault {
+        require((totalSupply() + amount_) <= maxMint, "HECTA: mint amount exceeds maxMint");
         _mint(account_, amount_);
     }
 
@@ -34,5 +37,9 @@ contract HectagonERC20Token is ERC20Permit, IHECTA, HectagonAccessControlled {
 
         _approve(account_, msg.sender, decreasedAllowance_);
         _burn(account_, amount_);
+    }
+
+    function setMaxMint(uint256 maxMin_) external onlyGovernor {
+        maxMint = maxMin_;
     }
 }

@@ -41,9 +41,6 @@ contract HectagonBondDepository is IBondDepository, NoteKeeper {
     Metadata[] public metadata; // extraneous market data
     mapping(uint256 => Adjustment) public adjustments; // control variable changes
 
-    uint256 public totalPayout;
-    uint256 public payoutCap = 2_000_000 * 1e9;
-
     // Queries
     mapping(address => uint256[]) public marketsForQuote; // market IDs for quote token
 
@@ -57,14 +54,6 @@ contract HectagonBondDepository is IBondDepository, NoteKeeper {
     ) NoteKeeper(_authority, _hecta, _gHecta, _treasury) {
         // save gas for users by bulk approving stake() transactions
         _hecta.approve(address(_gHecta), 1e45);
-    }
-
-    /**
-     * @notice                  set totalPayoutCap
-     * @param payoutCap_   ID of market to close
-     */
-    function setPayoutCap(uint256 payoutCap_) external onlyGovernor {
-        payoutCap = payoutCap_;
     }
 
     /* ======== DEPOSIT ======== */
@@ -116,7 +105,6 @@ contract HectagonBondDepository is IBondDepository, NoteKeeper {
         // markets have a max payout amount, capping size because deposits
         // do not experience slippage. max payout is recalculated upon tuning
         require(payout_ <= market.maxPayout, "Depository: max size exceeded");
-        require((totalPayout + payout_) <= payoutCap, "Depository: total payout hit payout cap");
 
         /*
          * each market is initialized with a capacity
@@ -179,8 +167,6 @@ contract HectagonBondDepository is IBondDepository, NoteKeeper {
 
         // transfer payment to treasury
         market.quoteToken.safeTransferFrom(msg.sender, address(treasury), _amount);
-
-        totalPayout += payout_;
 
         // if max debt is breached, the market is closed
         // this a circuit breaker
