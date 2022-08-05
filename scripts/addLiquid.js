@@ -8,7 +8,7 @@ async function main() {
 
     const [deployer] = await ethers.getSigners();
 
-    const hectaAddress = "0x9EEb5D78707E379441C399CEEd85164A1788b620";
+    const hectaAddress = "";
     const pancakeRouterAddress = "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3";
     const uniRouter = new ethers.Contract(pancakeRouterAddress, routerAbi, deployer);
 
@@ -21,10 +21,15 @@ async function main() {
     const busdAmount = utils.parseUnits("75000", 18);
     const hectaAmount = utils.parseUnits("25000", 9);
 
-    await busd.approve(pancakeRouterAddress, busdAmount);
-    await hecta.approve(pancakeRouterAddress, hectaAmount);
+    let tx = await busd.approve(pancakeRouterAddress, busdAmount);
+    await tx.wait();
+    console.log("addLiquidity: busd approved");
 
-    await uniRouter.addLiquidity(
+    tx = await hecta.approve(pancakeRouterAddress, hectaAmount);
+    await tx.wait();
+    console.log("addLiquidity: hecta approved");
+
+    tx = await uniRouter.addLiquidity(
         busd.address,
         hecta.address,
         busdAmount,
@@ -34,6 +39,11 @@ async function main() {
         deployer.address,
         deadline
     );
+    await tx.wait();
+
+    console.log("addLiquidity: Supply sucessfull:");
+    console.log("busdAmount:", busdAmount.toString());
+    console.log("hectaAmount:", hectaAmount.toString());
 }
 
 // We recommend this pattern to be able to use async/await everywhere
