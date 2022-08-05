@@ -31,12 +31,12 @@ contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
     mapping(uint256 => Space) public spaces;
     mapping(address => Note[]) public notes; // user exercise data
 
-    uint256 public spaceLength = 604800; // 7 days timestamp
-    uint256 public vestingLength = 864000; // 10 days timestamp
+    uint256 public spaceLength = 604_800; // 7 days timestamp
+    uint256 public vestingLength = 864_000; // 10 days timestamp
 
     /** Constant */
-    uint256 public constant RATE_DENOMINATOR = 1000000; // 1,000,000
-    uint256 public constant RATE_NUMERATOR = 100000; // in ten-thousandths ( 5000 = 0.5%, 100,000 = 10%)
+    uint256 public constant RATE_DENOMINATOR = 1_000_000; // 1,000,000
+    uint256 public constant RATE_NUMERATOR = 100_000; // in ten-thousandths ( 100,000 = 10%)
 
     /** Event */
     event Exercise(address indexed from, uint256 amount);
@@ -82,7 +82,7 @@ contract PHecta is Pausable, Ownable, ERC20, ERC20Burnable {
     }
 
     constructor() ERC20("Private Hectagon", "pHecta") {
-        _mint(msg.sender, 50000000000000000); // mint 50,000,000 token
+        _mint(msg.sender, 50_000_000_000_000_000); // mint 50,000,000 token
     }
 
     function decimals() public view virtual override returns (uint8) {

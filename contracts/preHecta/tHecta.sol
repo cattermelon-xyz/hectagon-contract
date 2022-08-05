@@ -31,12 +31,12 @@ contract THecta is Pausable, Ownable, ERC20, ERC20Burnable {
     mapping(uint256 => Space) public spaces;
     mapping(address => Note[]) public notes; // user exercise data
 
-    uint256 public spaceLength = 604800; // 7 days timestamp
-    uint256 public vestingLength = 864000; // 10 days timestamp
+    uint256 public spaceLength = 604_800; // 7 days timestamp
+    uint256 public vestingLength = 864_000; // 10 days timestamp
 
     /** Constant */
-    uint256 public constant RATE_DENOMINATOR = 1000000; // 1,000,000
-    uint256 public constant RATE_NUMERATOR = 50000; // in ten-thousandths (50,000 = 5%)
+    uint256 public constant RATE_DENOMINATOR = 1_000_000; // 1,000,000
+    uint256 public constant RATE_NUMERATOR = 50_000; // in ten-thousandths (50,000 = 5%)
 
     /** Event */
     event Exercise(address indexed from, uint256 amount);
@@ -82,7 +82,7 @@ contract THecta is Pausable, Ownable, ERC20, ERC20Burnable {
     }
 
     constructor() ERC20("Team Hectagon", "tHecta") {
-        _mint(msg.sender, 50000000000000000); // mint 50,000,000 token
+        _mint(msg.sender, 50_000_000_000_000_000); // mint 50,000,000 token
     }
 
     function decimals() public view virtual override returns (uint8) {
