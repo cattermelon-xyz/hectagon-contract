@@ -29,14 +29,14 @@ abstract contract FrontEndRewarder is HectagonAccessControlled {
     mapping(address => PartnerTerm) public partnerTerms; // reward term for each partner
     mapping(address => ReferTerm) public referTerms; // reward term for refer
 
-    uint256 public referTermCap = 2000; // % cap for referrer (3 decimals: 2000 = 20%)
-    uint256 public partnerTermCap = 10000; // % cap for partner (3 decimals: 10000 = 100%)
+    uint256 public referTermCap = 2_000; // % cap for referrer (3 decimals: 2,000 = 20%)
+    uint256 public partnerTermCap = 10_000; // % cap for partner (3 decimals: 1,0000 = 100%)
 
-    uint256 public daoInvestmentPercent = 10000; // 3 decimals: 10000 = 100%
+    uint256 public daoInvestmentPercent = 10_000; // 3 decimals: 10,000 = 100%
 
-    uint256 public daoCommunityPercent = 45000; // 3 decimals: 45000 = 450%
+    uint256 public daoCommunityPercent = 45_000; // 3 decimals: 45,000 = 450%
 
-    uint256 private immutable RATE_DENOMINATOR = 1e4;
+    uint256 private immutable RATE_DENOMINATOR = 10_000;
 
     IERC20 internal immutable hecta; // reward token
 
