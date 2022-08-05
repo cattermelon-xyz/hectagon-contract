@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { waitFor } from "../txHelper";
-import { CONTRACTS, INITIAL_REWARD_RATE, INITIAL_INDEX } from "../constants";
+import { CONTRACTS, INITIAL_REWARD_RATE } from "../constants";
 import {
     GovernanceHectagon__factory,
     Distributor__factory,
