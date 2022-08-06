@@ -32,7 +32,7 @@ contract THecta is Pausable, Ownable, ERC20, ERC20Burnable {
     mapping(address => Note[]) public notes; // user exercise data
 
     uint256 public spaceLength = 604_800; // 7 days timestamp
-    uint256 public vestingLength = 864_000; // 10 days timestamp
+    uint256 public vestingLength = 604_800; // 7 days timestamp
 
     /** Constant */
     uint256 public constant RATE_DENOMINATOR = 1_000_000; // 1,000,000
@@ -89,14 +89,6 @@ contract THecta is Pausable, Ownable, ERC20, ERC20Burnable {
         return 9;
     }
 
-    /**
-     * @notice mass approval saves gas
-     */
-
-    function massApprove() external {
-        IERC20(busdAddress).approve(treasuryAddress, 1e33);
-    }
-
     function setSpaceLength(uint256 spaceLength_) external onlyOwner {
         spaceLength = spaceLength_;
     }
@@ -115,13 +107,12 @@ contract THecta is Pausable, Ownable, ERC20, ERC20Burnable {
         treasuryAddress = treasuryAddress_;
         busdAddress = busdAddress_;
         circulatingHectaContract = circulatingHectaContract_;
-        IERC20(busdAddress).approve(treasuryAddress, 1e33);
     }
 
-    function start() external onlyOwner {
+    function start(uint256 startTimestamp_) external onlyOwner {
         require(startTimestamp == 0, "Already started!");
-        startTimestamp = block.timestamp;
-        spaces[spaceCounter.current()] = Space(0, totalSupply(), block.timestamp);
+        startTimestamp = startTimestamp_;
+        spaces[spaceCounter.current()] = Space(0, totalSupply(), startTimestamp_);
     }
 
     function enableWhiteList() external onlyOwner {

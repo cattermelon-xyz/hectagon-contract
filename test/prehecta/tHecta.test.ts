@@ -31,7 +31,7 @@ describe("Team Hectagon", async () => {
     let treasury: HectagonTreasury;
     let circulatingSupplyConrtact: HectaCirculatingSupply;
 
-    const preminedtHecta = utils.parseUnits("30000", 9);
+    const preminedHecta = utils.parseUnits("30000", 9);
     const RateDenominator = BigNumber.from(1000000);
     const MaxPHectaToExercise = BigNumber.from(50000);
     const premintedTHecta = utils.parseUnits("50000000", 9); // 50,000,000 token
@@ -48,6 +48,8 @@ describe("Team Hectagon", async () => {
     const increaseTime = async (time: number) => {
         await network.provider.send("evm_increaseTime", [time]);
     };
+    const spaceLength = 604800;
+    const startTime = () => Math.floor(Date.now() / 1000) - spaceLength - 100;
 
     /**
      * Everything in this block is only run once before all tests.
@@ -87,7 +89,7 @@ describe("Team Hectagon", async () => {
         await treasury.enable("1", tHecta.address);
 
         // initialize treasury, 30,000
-        await treasury.initialize(owner.address, preminedtHecta);
+        await treasury.initialize(owner.address, preminedHecta);
 
         await tHecta.initialize(
             hecta.address,
@@ -164,18 +166,17 @@ describe("Team Hectagon", async () => {
 
     describe("start", () => {
         it("must be done by owner", async () => {
-            await expect(tHecta.connect(bob).start()).to.be.revertedWith(
+            await expect(tHecta.connect(bob).start(startTime())).to.be.revertedWith(
                 "Ownable: caller is not the owner"
             );
         });
 
         it("Owner can be done correctly", async () => {
             const ownerConn = tHecta.connect(owner);
-            await ownerConn.start();
+            const timestampBefore = startTime();
+            await ownerConn.start(timestampBefore);
             const startTimestamp = await ownerConn.startTimestamp();
-            const blockNumBefore = await ethers.provider.getBlockNumber();
-            const blockBefore = await ethers.provider.getBlock(blockNumBefore);
-            const timestampBefore = blockBefore.timestamp;
+
             await expect(startTimestamp).to.be.equal(timestampBefore);
 
             const spaceCounter = await ownerConn.spaceCounter();
@@ -195,17 +196,21 @@ describe("Team Hectagon", async () => {
             const ownerConn = tHecta.connect(owner);
             await ownerConn.transfer(alice.address, mockBalance);
             await ownerConn.transfer(bob.address, mockBalance);
-            await ownerConn.start();
+            await ownerConn.start(startTime());
         });
 
-        it("show info correctly before start", async () => {
+        it("show info correctly right after start", async () => {
             const ownerConn = tHecta.connect(owner);
 
             const aliceClaimable = await ownerConn.getClaimable(alice.address);
             const bobClaimable = await ownerConn.getClaimable(bob.address);
-
-            await expect(aliceClaimable).to.be.eq(0);
-            await expect(bobClaimable).to.be.eq(0);
+            const expectedClaimable = preminedHecta
+                .mul(MaxPHectaToExercise)
+                .div(RateDenominator)
+                .mul(mockBalance)
+                .div(premintedTHecta);
+            await expect(aliceClaimable).to.be.eq(expectedClaimable);
+            await expect(bobClaimable).to.be.eq(expectedClaimable);
         });
 
         it("show info correctly after start, first space, incre totalHecta", async () => {
@@ -213,7 +218,7 @@ describe("Team Hectagon", async () => {
             await treasury.connect(owner).mint(owner.address, hectaIncreAmount);
 
             const expectedClaimable = hectaIncreAmount
-                .add(preminedtHecta)
+                .add(preminedHecta)
                 .mul(MaxPHectaToExercise)
                 .div(RateDenominator)
                 .mul(mockBalance)
@@ -235,7 +240,7 @@ describe("Team Hectagon", async () => {
         it("after first space, space meta data should updated", async () => {
             const ownerConn = tHecta.connect(owner);
             const bobConn = tHecta.connect(bob);
-            await ownerConn.start();
+            await ownerConn.start(startTime());
             const spaceLength = await ownerConn.spaceLength();
 
             await increaseTime(spaceLength.toNumber() + 1);
@@ -246,7 +251,7 @@ describe("Team Hectagon", async () => {
             await expect(currentSpaceCount).to.be.eq(1);
             const [totalHecta, totalPHecta, timestamp] = await ownerConn.spaces(currentSpaceCount);
 
-            await expect(totalHecta).to.be.eq(preminedtHecta);
+            await expect(totalHecta).to.be.eq(preminedHecta);
             await expect(totalPHecta).to.be.eq(premintedTHecta);
 
             const blockNumBefore = await ethers.provider.getBlockNumber();
@@ -264,7 +269,7 @@ describe("Team Hectagon", async () => {
             const ownerConn = tHecta.connect(owner);
             await ownerConn.transfer(alice.address, aliceMockBalance);
             await ownerConn.transfer(bob.address, bobMockBalance);
-            await ownerConn.start();
+            await ownerConn.start(startTime());
         });
 
         it("user can transfer correctly after start in space 0", async () => {
@@ -298,7 +303,7 @@ describe("Team Hectagon", async () => {
             const aliceInfo = await ownerConn.holders(alice.address);
             const bobInfo = await ownerConn.holders(bob.address);
 
-            const aliceCurrentSpaceProfit = preminedtHecta
+            const aliceCurrentSpaceProfit = preminedHecta
                 .mul(MaxPHectaToExercise)
                 .div(RateDenominator)
                 .mul(aliceMockBalance)
@@ -308,7 +313,7 @@ describe("Team Hectagon", async () => {
                 aliceCurrentSpaceProfit.mul(transferAmount).div(aliceMockBalance)
             );
 
-            const bobCurrentSpaceProfit = preminedtHecta
+            const bobCurrentSpaceProfit = preminedHecta
                 .mul(MaxPHectaToExercise)
                 .div(RateDenominator)
                 .mul(bobMockBalance)
@@ -343,7 +348,7 @@ describe("Team Hectagon", async () => {
 
             await tHecta.connect(alice).transfer(bob.address, transferAmount);
 
-            const space1AliceCurrentSpaceProfit = preminedtHecta
+            const space1AliceCurrentSpaceProfit = preminedHecta
                 .mul(MaxPHectaToExercise)
                 .div(RateDenominator)
                 .mul(aliceMockBalance)
@@ -353,7 +358,7 @@ describe("Team Hectagon", async () => {
                 space1AliceCurrentSpaceProfit.mul(transferAmount).div(aliceMockBalance)
             );
 
-            const space1BobCurrentSpaceProfit = preminedtHecta
+            const space1BobCurrentSpaceProfit = preminedHecta
                 .mul(MaxPHectaToExercise)
                 .div(RateDenominator)
                 .mul(bobMockBalance)
@@ -434,27 +439,19 @@ describe("Team Hectagon", async () => {
                 busd.transfer(alice.address, "100000000000000000000000"),
                 busd.transfer(bob.address, "100000000000000000000000"),
             ]);
-            await ownerConn.start();
+
+            await ownerConn.start(startTime());
         });
 
-        it("user can only exercise from space 1", async () => {
-            await expect(tHecta.connect(bob).exercise("100000")).to.be.revertedWith(
-                "Claim more than maximum amount"
-            );
-        });
-
-        it("user can exercise correctly from space 1", async () => {
+        it("user can exercise correctly from space 0", async () => {
             const ownerConn = tHecta.connect(owner);
-            const aliceCurrentSpaceProfit = preminedtHecta
+            const aliceCurrentSpaceProfit = preminedHecta
                 .mul(MaxPHectaToExercise)
                 .div(RateDenominator)
                 .mul(aliceMockBalance)
                 .div(premintedTHecta);
 
             const aliceMaxClaim = aliceCurrentSpaceProfit;
-            const spaceLength = await ownerConn.spaceLength();
-            await increaseTime(spaceLength.toNumber() + 1);
-            await mineBlock();
             await busd
                 .connect(alice)
                 .approve(tHecta.address, aliceCurrentSpaceProfit.mul(toBusdRate));
@@ -481,7 +478,7 @@ describe("Team Hectagon", async () => {
 
         it("user cannot transfer after exercise in same space", async () => {
             const ownerConn = tHecta.connect(owner);
-            const aliceCurrentSpaceProfit = preminedtHecta
+            const aliceCurrentSpaceProfit = preminedHecta
                 .mul(MaxPHectaToExercise)
                 .div(RateDenominator)
                 .mul(aliceMockBalance)
@@ -508,7 +505,7 @@ describe("Team Hectagon", async () => {
             await increaseTime(spaceLength.toNumber() + 1);
             await mineBlock();
 
-            const space1AliceCurrentSpaceProfit = preminedtHecta
+            const space1AliceCurrentSpaceProfit = preminedHecta
                 .mul(MaxPHectaToExercise)
                 .div(RateDenominator)
                 .mul(aliceMockBalance)
@@ -519,7 +516,7 @@ describe("Team Hectagon", async () => {
 
             const space1AliceMaxClaim = space1AliceCurrentSpaceProfit;
 
-            const space1BobCurrentSpaceProfit = preminedtHecta
+            const space1BobCurrentSpaceProfit = preminedHecta
                 .mul(MaxPHectaToExercise)
                 .div(RateDenominator)
                 .mul(bobMockBalance)
@@ -597,12 +594,13 @@ describe("Team Hectagon", async () => {
                 busd.transfer(bob.address, "100000000000000000000000"),
                 ownerConn.setVestingLength(vestingLength),
             ]);
-            await ownerConn.start();
+
+            await ownerConn.start(startTime());
         });
 
         it("after exercise and vesting time, user can get their vesting hecta", async () => {
             const ownerConn = tHecta.connect(owner);
-            const aliceCurrentSpaceProfit = preminedtHecta
+            const aliceCurrentSpaceProfit = preminedHecta
                 .mul(MaxPHectaToExercise)
                 .div(RateDenominator)
                 .mul(aliceMockBalance)
