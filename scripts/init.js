@@ -1,5 +1,5 @@
 const { ethers } = require("hardhat");
-const { ADDRESSES } = require("./constants");
+const { ADDRESSES, FIRST_START_TIME_PRE_HECTA } = require("./constants");
 
 async function main() {
     const [deployer] = await ethers.getSigners();
@@ -26,8 +26,9 @@ async function main() {
     const BUSD = await ethers.getContractFactory("BEP20Token");
     const busd = await BUSD.attach(ADDRESSES.busd);
 
-    await (await pHecta.start()).wait();
-    await (await tHecta.start()).wait();
+    await (await pHecta.start(FIRST_START_TIME_PRE_HECTA)).wait();
+    await (await tHecta.start(FIRST_START_TIME_PRE_HECTA)).wait();
+
     console.log("pHecta and tHecta started");
 
     let tx = await busd.transfer(treasury.address, ethers.utils.parseUnits("75000", 18));
