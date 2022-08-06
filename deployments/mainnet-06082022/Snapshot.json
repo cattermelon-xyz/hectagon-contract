@@ -1,0 +1,355 @@
+{
+  "address": "0x63add74873b304B3992DCe7A38C1A1ed684E5A98",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_hectaCirculatingSupply",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_pHecta",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_tHecta",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_gHecta",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "TOTAL_POINT",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "caclulateHectaWeight",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "gHecta",
+      "outputs": [
+        {
+          "internalType": "contract IgHECTA",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "gHectaWeight",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "hectaCirculatingSupply",
+      "outputs": [
+        {
+          "internalType": "contract IHectaCirculatingSupply",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pHecta",
+      "outputs": [
+        {
+          "internalType": "contract IERC20",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pHectaWeight",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_hectaCirculatingSupply",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_pHecta",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_tHecta",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_gHecta",
+          "type": "address"
+        }
+      ],
+      "name": "setAddresses",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "tHecta",
+      "outputs": [
+        {
+          "internalType": "contract IERC20",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "tHectaWeight",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x6b47efe18baa89953ffd241876d9e8ffdff5ab4c074396fdaee70fb6474c27e5",
+  "receipt": {
+    "to": null,
+    "from": "0xAd14706CE4a7FC73eF640AaB3002c7B97f42b604",
+    "contractAddress": "0x63add74873b304B3992DCe7A38C1A1ed684E5A98",
+    "transactionIndex": 183,
+    "gasUsed": "650541",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000800000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000002000020001000000000000000800000000000000000000000000000000400000000000000000000000000000000000000000000000800000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020010000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xf3970e832a4f41a8b64b5e2e4855edee10921d6fdacaa9dceb30f03052d03b85",
+    "transactionHash": "0x6b47efe18baa89953ffd241876d9e8ffdff5ab4c074396fdaee70fb6474c27e5",
+    "logs": [
+      {
+        "transactionIndex": 183,
+        "blockNumber": 20195483,
+        "transactionHash": "0x6b47efe18baa89953ffd241876d9e8ffdff5ab4c074396fdaee70fb6474c27e5",
+        "address": "0x63add74873b304B3992DCe7A38C1A1ed684E5A98",
+        "topics": [
+          "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "0x000000000000000000000000ad14706ce4a7fc73ef640aab3002c7b97f42b604"
+        ],
+        "data": "0x",
+        "logIndex": 321,
+        "blockHash": "0xf3970e832a4f41a8b64b5e2e4855edee10921d6fdacaa9dceb30f03052d03b85"
+      }
+    ],
+    "blockNumber": 20195483,
+    "cumulativeGasUsed": "17691860",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x44F759187a1694F22EC16D44809c120DADF315FD",
+    "0x33218297D315fC70E1520e292CA88348b648bf15",
+    "0x459F18859399e3178CE1E74F0c4a791eAEe13bEE",
+    "0x7D31ed03c2442F9ffc4f22d90772EE1f32fa9b0D"
+  ],
+  "solcInputHash": "ca12d8af804850e81cc663dd9685dae9",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.10+commit.fc410830\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_hectaCirculatingSupply\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_pHecta\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tHecta\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_gHecta\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"TOTAL_POINT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"caclulateHectaWeight\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gHecta\",\"outputs\":[{\"internalType\":\"contract IgHECTA\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"gHectaWeight\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"hectaCirculatingSupply\",\"outputs\":[{\"internalType\":\"contract IHectaCirculatingSupply\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pHecta\",\"outputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pHectaWeight\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"renounceOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_hectaCirculatingSupply\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_pHecta\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tHecta\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_gHecta\",\"type\":\"address\"}],\"name\":\"setAddresses\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"tHecta\",\"outputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"tHectaWeight\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"owner()\":{\"details\":\"Returns the address of the current owner.\"},\"renounceOwnership()\":{\"details\":\"Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.\"},\"transferOwnership(address)\":{\"details\":\"Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/Snapshot.sol\":\"Snapshot\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"none\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":800},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts/access/Ownable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.7.0) (access/Ownable.sol)\\n\\npragma solidity ^0.8.0;\\n\\nimport \\\"../utils/Context.sol\\\";\\n\\n/**\\n * @dev Contract module which provides a basic access control mechanism, where\\n * there is an account (an owner) that can be granted exclusive access to\\n * specific functions.\\n *\\n * By default, the owner account will be the one that deploys the contract. This\\n * can later be changed with {transferOwnership}.\\n *\\n * This module is used through inheritance. It will make available the modifier\\n * `onlyOwner`, which can be applied to your functions to restrict their use to\\n * the owner.\\n */\\nabstract contract Ownable is Context {\\n    address private _owner;\\n\\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\\n\\n    /**\\n     * @dev Initializes the contract setting the deployer as the initial owner.\\n     */\\n    constructor() {\\n        _transferOwnership(_msgSender());\\n    }\\n\\n    /**\\n     * @dev Throws if called by any account other than the owner.\\n     */\\n    modifier onlyOwner() {\\n        _checkOwner();\\n        _;\\n    }\\n\\n    /**\\n     * @dev Returns the address of the current owner.\\n     */\\n    function owner() public view virtual returns (address) {\\n        return _owner;\\n    }\\n\\n    /**\\n     * @dev Throws if the sender is not the owner.\\n     */\\n    function _checkOwner() internal view virtual {\\n        require(owner() == _msgSender(), \\\"Ownable: caller is not the owner\\\");\\n    }\\n\\n    /**\\n     * @dev Leaves the contract without owner. It will not be possible to call\\n     * `onlyOwner` functions anymore. Can only be called by the current owner.\\n     *\\n     * NOTE: Renouncing ownership will leave the contract without an owner,\\n     * thereby removing any functionality that is only available to the owner.\\n     */\\n    function renounceOwnership() public virtual onlyOwner {\\n        _transferOwnership(address(0));\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Can only be called by the current owner.\\n     */\\n    function transferOwnership(address newOwner) public virtual onlyOwner {\\n        require(newOwner != address(0), \\\"Ownable: new owner is the zero address\\\");\\n        _transferOwnership(newOwner);\\n    }\\n\\n    /**\\n     * @dev Transfers ownership of the contract to a new account (`newOwner`).\\n     * Internal function without access restriction.\\n     */\\n    function _transferOwnership(address newOwner) internal virtual {\\n        address oldOwner = _owner;\\n        _owner = newOwner;\\n        emit OwnershipTransferred(oldOwner, newOwner);\\n    }\\n}\\n\",\"keccak256\":\"0xa94b34880e3c1b0b931662cb1c09e5dfa6662f31cba80e07c5ee71cd135c9673\",\"license\":\"MIT\"},\"@openzeppelin/contracts/interfaces/IERC4626.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.7.0) (interfaces/IERC4626.sol)\\n\\npragma solidity ^0.8.0;\\n\\nimport \\\"../token/ERC20/IERC20.sol\\\";\\nimport \\\"../token/ERC20/extensions/IERC20Metadata.sol\\\";\\n\\n/**\\n * @dev Interface of the ERC4626 \\\"Tokenized Vault Standard\\\", as defined in\\n * https://eips.ethereum.org/EIPS/eip-4626[ERC-4626].\\n *\\n * _Available since v4.7._\\n */\\ninterface IERC4626 is IERC20, IERC20Metadata {\\n    event Deposit(address indexed caller, address indexed owner, uint256 assets, uint256 shares);\\n\\n    event Withdraw(\\n        address indexed caller,\\n        address indexed receiver,\\n        address indexed owner,\\n        uint256 assets,\\n        uint256 shares\\n    );\\n\\n    /**\\n     * @dev Returns the address of the underlying token used for the Vault for accounting, depositing, and withdrawing.\\n     *\\n     * - MUST be an ERC-20 token contract.\\n     * - MUST NOT revert.\\n     */\\n    function asset() external view returns (address assetTokenAddress);\\n\\n    /**\\n     * @dev Returns the total amount of the underlying asset that is \\u201cmanaged\\u201d by Vault.\\n     *\\n     * - SHOULD include any compounding that occurs from yield.\\n     * - MUST be inclusive of any fees that are charged against assets in the Vault.\\n     * - MUST NOT revert.\\n     */\\n    function totalAssets() external view returns (uint256 totalManagedAssets);\\n\\n    /**\\n     * @dev Returns the amount of shares that the Vault would exchange for the amount of assets provided, in an ideal\\n     * scenario where all the conditions are met.\\n     *\\n     * - MUST NOT be inclusive of any fees that are charged against assets in the Vault.\\n     * - MUST NOT show any variations depending on the caller.\\n     * - MUST NOT reflect slippage or other on-chain conditions, when performing the actual exchange.\\n     * - MUST NOT revert.\\n     *\\n     * NOTE: This calculation MAY NOT reflect the \\u201cper-user\\u201d price-per-share, and instead should reflect the\\n     * \\u201caverage-user\\u2019s\\u201d price-per-share, meaning what the average user should expect to see when exchanging to and\\n     * from.\\n     */\\n    function convertToShares(uint256 assets) external view returns (uint256 shares);\\n\\n    /**\\n     * @dev Returns the amount of assets that the Vault would exchange for the amount of shares provided, in an ideal\\n     * scenario where all the conditions are met.\\n     *\\n     * - MUST NOT be inclusive of any fees that are charged against assets in the Vault.\\n     * - MUST NOT show any variations depending on the caller.\\n     * - MUST NOT reflect slippage or other on-chain conditions, when performing the actual exchange.\\n     * - MUST NOT revert.\\n     *\\n     * NOTE: This calculation MAY NOT reflect the \\u201cper-user\\u201d price-per-share, and instead should reflect the\\n     * \\u201caverage-user\\u2019s\\u201d price-per-share, meaning what the average user should expect to see when exchanging to and\\n     * from.\\n     */\\n    function convertToAssets(uint256 shares) external view returns (uint256 assets);\\n\\n    /**\\n     * @dev Returns the maximum amount of the underlying asset that can be deposited into the Vault for the receiver,\\n     * through a deposit call.\\n     *\\n     * - MUST return a limited value if receiver is subject to some deposit limit.\\n     * - MUST return 2 ** 256 - 1 if there is no limit on the maximum amount of assets that may be deposited.\\n     * - MUST NOT revert.\\n     */\\n    function maxDeposit(address receiver) external view returns (uint256 maxAssets);\\n\\n    /**\\n     * @dev Allows an on-chain or off-chain user to simulate the effects of their deposit at the current block, given\\n     * current on-chain conditions.\\n     *\\n     * - MUST return as close to and no more than the exact amount of Vault shares that would be minted in a deposit\\n     *   call in the same transaction. I.e. deposit should return the same or more shares as previewDeposit if called\\n     *   in the same transaction.\\n     * - MUST NOT account for deposit limits like those returned from maxDeposit and should always act as though the\\n     *   deposit would be accepted, regardless if the user has enough tokens approved, etc.\\n     * - MUST be inclusive of deposit fees. Integrators should be aware of the existence of deposit fees.\\n     * - MUST NOT revert.\\n     *\\n     * NOTE: any unfavorable discrepancy between convertToShares and previewDeposit SHOULD be considered slippage in\\n     * share price or some other type of condition, meaning the depositor will lose assets by depositing.\\n     */\\n    function previewDeposit(uint256 assets) external view returns (uint256 shares);\\n\\n    /**\\n     * @dev Mints shares Vault shares to receiver by depositing exactly amount of underlying tokens.\\n     *\\n     * - MUST emit the Deposit event.\\n     * - MAY support an additional flow in which the underlying tokens are owned by the Vault contract before the\\n     *   deposit execution, and are accounted for during deposit.\\n     * - MUST revert if all of assets cannot be deposited (due to deposit limit being reached, slippage, the user not\\n     *   approving enough underlying tokens to the Vault contract, etc).\\n     *\\n     * NOTE: most implementations will require pre-approval of the Vault with the Vault\\u2019s underlying asset token.\\n     */\\n    function deposit(uint256 assets, address receiver) external returns (uint256 shares);\\n\\n    /**\\n     * @dev Returns the maximum amount of the Vault shares that can be minted for the receiver, through a mint call.\\n     * - MUST return a limited value if receiver is subject to some mint limit.\\n     * - MUST return 2 ** 256 - 1 if there is no limit on the maximum amount of shares that may be minted.\\n     * - MUST NOT revert.\\n     */\\n    function maxMint(address receiver) external view returns (uint256 maxShares);\\n\\n    /**\\n     * @dev Allows an on-chain or off-chain user to simulate the effects of their mint at the current block, given\\n     * current on-chain conditions.\\n     *\\n     * - MUST return as close to and no fewer than the exact amount of assets that would be deposited in a mint call\\n     *   in the same transaction. I.e. mint should return the same or fewer assets as previewMint if called in the\\n     *   same transaction.\\n     * - MUST NOT account for mint limits like those returned from maxMint and should always act as though the mint\\n     *   would be accepted, regardless if the user has enough tokens approved, etc.\\n     * - MUST be inclusive of deposit fees. Integrators should be aware of the existence of deposit fees.\\n     * - MUST NOT revert.\\n     *\\n     * NOTE: any unfavorable discrepancy between convertToAssets and previewMint SHOULD be considered slippage in\\n     * share price or some other type of condition, meaning the depositor will lose assets by minting.\\n     */\\n    function previewMint(uint256 shares) external view returns (uint256 assets);\\n\\n    /**\\n     * @dev Mints exactly shares Vault shares to receiver by depositing amount of underlying tokens.\\n     *\\n     * - MUST emit the Deposit event.\\n     * - MAY support an additional flow in which the underlying tokens are owned by the Vault contract before the mint\\n     *   execution, and are accounted for during mint.\\n     * - MUST revert if all of shares cannot be minted (due to deposit limit being reached, slippage, the user not\\n     *   approving enough underlying tokens to the Vault contract, etc).\\n     *\\n     * NOTE: most implementations will require pre-approval of the Vault with the Vault\\u2019s underlying asset token.\\n     */\\n    function mint(uint256 shares, address receiver) external returns (uint256 assets);\\n\\n    /**\\n     * @dev Returns the maximum amount of the underlying asset that can be withdrawn from the owner balance in the\\n     * Vault, through a withdraw call.\\n     *\\n     * - MUST return a limited value if owner is subject to some withdrawal limit or timelock.\\n     * - MUST NOT revert.\\n     */\\n    function maxWithdraw(address owner) external view returns (uint256 maxAssets);\\n\\n    /**\\n     * @dev Allows an on-chain or off-chain user to simulate the effects of their withdrawal at the current block,\\n     * given current on-chain conditions.\\n     *\\n     * - MUST return as close to and no fewer than the exact amount of Vault shares that would be burned in a withdraw\\n     *   call in the same transaction. I.e. withdraw should return the same or fewer shares as previewWithdraw if\\n     *   called\\n     *   in the same transaction.\\n     * - MUST NOT account for withdrawal limits like those returned from maxWithdraw and should always act as though\\n     *   the withdrawal would be accepted, regardless if the user has enough shares, etc.\\n     * - MUST be inclusive of withdrawal fees. Integrators should be aware of the existence of withdrawal fees.\\n     * - MUST NOT revert.\\n     *\\n     * NOTE: any unfavorable discrepancy between convertToShares and previewWithdraw SHOULD be considered slippage in\\n     * share price or some other type of condition, meaning the depositor will lose assets by depositing.\\n     */\\n    function previewWithdraw(uint256 assets) external view returns (uint256 shares);\\n\\n    /**\\n     * @dev Burns shares from owner and sends exactly assets of underlying tokens to receiver.\\n     *\\n     * - MUST emit the Withdraw event.\\n     * - MAY support an additional flow in which the underlying tokens are owned by the Vault contract before the\\n     *   withdraw execution, and are accounted for during withdraw.\\n     * - MUST revert if all of assets cannot be withdrawn (due to withdrawal limit being reached, slippage, the owner\\n     *   not having enough shares, etc).\\n     *\\n     * Note that some implementations will require pre-requesting to the Vault before a withdrawal may be performed.\\n     * Those methods should be performed separately.\\n     */\\n    function withdraw(\\n        uint256 assets,\\n        address receiver,\\n        address owner\\n    ) external returns (uint256 shares);\\n\\n    /**\\n     * @dev Returns the maximum amount of Vault shares that can be redeemed from the owner balance in the Vault,\\n     * through a redeem call.\\n     *\\n     * - MUST return a limited value if owner is subject to some withdrawal limit or timelock.\\n     * - MUST return balanceOf(owner) if owner is not subject to any withdrawal limit or timelock.\\n     * - MUST NOT revert.\\n     */\\n    function maxRedeem(address owner) external view returns (uint256 maxShares);\\n\\n    /**\\n     * @dev Allows an on-chain or off-chain user to simulate the effects of their redeemption at the current block,\\n     * given current on-chain conditions.\\n     *\\n     * - MUST return as close to and no more than the exact amount of assets that would be withdrawn in a redeem call\\n     *   in the same transaction. I.e. redeem should return the same or more assets as previewRedeem if called in the\\n     *   same transaction.\\n     * - MUST NOT account for redemption limits like those returned from maxRedeem and should always act as though the\\n     *   redemption would be accepted, regardless if the user has enough shares, etc.\\n     * - MUST be inclusive of withdrawal fees. Integrators should be aware of the existence of withdrawal fees.\\n     * - MUST NOT revert.\\n     *\\n     * NOTE: any unfavorable discrepancy between convertToAssets and previewRedeem SHOULD be considered slippage in\\n     * share price or some other type of condition, meaning the depositor will lose assets by redeeming.\\n     */\\n    function previewRedeem(uint256 shares) external view returns (uint256 assets);\\n\\n    /**\\n     * @dev Burns exactly shares from owner and sends assets of underlying tokens to receiver.\\n     *\\n     * - MUST emit the Withdraw event.\\n     * - MAY support an additional flow in which the underlying tokens are owned by the Vault contract before the\\n     *   redeem execution, and are accounted for during redeem.\\n     * - MUST revert if all of shares cannot be redeemed (due to withdrawal limit being reached, slippage, the owner\\n     *   not having enough shares, etc).\\n     *\\n     * NOTE: some implementations will require pre-requesting to the Vault before a withdrawal may be performed.\\n     * Those methods should be performed separately.\\n     */\\n    function redeem(\\n        uint256 shares,\\n        address receiver,\\n        address owner\\n    ) external returns (uint256 assets);\\n}\\n\",\"keccak256\":\"0x9750c6fec736eb3320e85924f36a3060fa4a4ab1758d06d9585e175d164eefdb\",\"license\":\"MIT\"},\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v4.6.0) (token/ERC20/IERC20.sol)\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev Interface of the ERC20 standard as defined in the EIP.\\n */\\ninterface IERC20 {\\n    /**\\n     * @dev Emitted when `value` tokens are moved from one account (`from`) to\\n     * another (`to`).\\n     *\\n     * Note that `value` may be zero.\\n     */\\n    event Transfer(address indexed from, address indexed to, uint256 value);\\n\\n    /**\\n     * @dev Emitted when the allowance of a `spender` for an `owner` is set by\\n     * a call to {approve}. `value` is the new allowance.\\n     */\\n    event Approval(address indexed owner, address indexed spender, uint256 value);\\n\\n    /**\\n     * @dev Returns the amount of tokens in existence.\\n     */\\n    function totalSupply() external view returns (uint256);\\n\\n    /**\\n     * @dev Returns the amount of tokens owned by `account`.\\n     */\\n    function balanceOf(address account) external view returns (uint256);\\n\\n    /**\\n     * @dev Moves `amount` tokens from the caller's account to `to`.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transfer(address to, uint256 amount) external returns (bool);\\n\\n    /**\\n     * @dev Returns the remaining number of tokens that `spender` will be\\n     * allowed to spend on behalf of `owner` through {transferFrom}. This is\\n     * zero by default.\\n     *\\n     * This value changes when {approve} or {transferFrom} are called.\\n     */\\n    function allowance(address owner, address spender) external view returns (uint256);\\n\\n    /**\\n     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * IMPORTANT: Beware that changing an allowance with this method brings the risk\\n     * that someone may use both the old and the new allowance by unfortunate\\n     * transaction ordering. One possible solution to mitigate this race\\n     * condition is to first reduce the spender's allowance to 0 and set the\\n     * desired value afterwards:\\n     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729\\n     *\\n     * Emits an {Approval} event.\\n     */\\n    function approve(address spender, uint256 amount) external returns (bool);\\n\\n    /**\\n     * @dev Moves `amount` tokens from `from` to `to` using the\\n     * allowance mechanism. `amount` is then deducted from the caller's\\n     * allowance.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transferFrom(\\n        address from,\\n        address to,\\n        uint256 amount\\n    ) external returns (bool);\\n}\\n\",\"keccak256\":\"0x9750c6b834f7b43000631af5cc30001c5f547b3ceb3635488f140f60e897ea6b\",\"license\":\"MIT\"},\"@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts v4.4.1 (token/ERC20/extensions/IERC20Metadata.sol)\\n\\npragma solidity ^0.8.0;\\n\\nimport \\\"../IERC20.sol\\\";\\n\\n/**\\n * @dev Interface for the optional metadata functions from the ERC20 standard.\\n *\\n * _Available since v4.1._\\n */\\ninterface IERC20Metadata is IERC20 {\\n    /**\\n     * @dev Returns the name of the token.\\n     */\\n    function name() external view returns (string memory);\\n\\n    /**\\n     * @dev Returns the symbol of the token.\\n     */\\n    function symbol() external view returns (string memory);\\n\\n    /**\\n     * @dev Returns the decimals places of the token.\\n     */\\n    function decimals() external view returns (uint8);\\n}\\n\",\"keccak256\":\"0x8de418a5503946cabe331f35fe242d3201a73f67f77aaeb7110acb1f30423aca\",\"license\":\"MIT\"},\"@openzeppelin/contracts/utils/Context.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts v4.4.1 (utils/Context.sol)\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev Provides information about the current execution context, including the\\n * sender of the transaction and its data. While these are generally available\\n * via msg.sender and msg.data, they should not be accessed in such a direct\\n * manner, since when dealing with meta-transactions the account sending and\\n * paying for execution may not be the actual sender (as far as an application\\n * is concerned).\\n *\\n * This contract is only required for intermediate, library-like contracts.\\n */\\nabstract contract Context {\\n    function _msgSender() internal view virtual returns (address) {\\n        return msg.sender;\\n    }\\n\\n    function _msgData() internal view virtual returns (bytes calldata) {\\n        return msg.data;\\n    }\\n}\\n\",\"keccak256\":\"0xe2e337e6dde9ef6b680e07338c493ebea1b5fd09b43424112868e9cc1706bca7\",\"license\":\"MIT\"},\"contracts/Snapshot.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.10;\\n\\nimport \\\"@openzeppelin/contracts/token/ERC20/IERC20.sol\\\";\\nimport \\\"@openzeppelin/contracts/access/Ownable.sol\\\";\\nimport \\\"./interfaces/IHectaCirculatingSupply.sol\\\";\\nimport \\\"./interfaces/IgHECTA.sol\\\";\\n\\ncontract Snapshot is Ownable {\\n    IHectaCirculatingSupply public hectaCirculatingSupply;\\n    IERC20 public pHecta;\\n    IERC20 public tHecta;\\n    IgHECTA public gHecta;\\n\\n    uint256 public constant TOTAL_POINT = 100 * 10**9;\\n\\n    constructor(\\n        address _hectaCirculatingSupply,\\n        address _pHecta,\\n        address _tHecta,\\n        address _gHecta\\n    ) {\\n        require(_hectaCirculatingSupply != address(0), \\\"Zero address: HECTA\\\");\\n        hectaCirculatingSupply = IHectaCirculatingSupply(_hectaCirculatingSupply);\\n        require(_pHecta != address(0), \\\"Zero address: pHECTA\\\");\\n        pHecta = IERC20(_pHecta);\\n        require(_tHecta != address(0), \\\"Zero address: tHECTA\\\");\\n        tHecta = IERC20(_tHecta);\\n        require(_gHecta != address(0), \\\"Zero address: gHecta\\\");\\n        gHecta = IgHECTA(_gHecta);\\n    }\\n\\n    function gHectaWeight() public view returns (uint256) {\\n        return (caclulateHectaWeight() * gHecta.index()) / 10**9;\\n    }\\n\\n    function pHectaWeight() public pure returns (uint256) {\\n        return 500;\\n    }\\n\\n    function tHectaWeight() public pure returns (uint256) {\\n        return 500;\\n    }\\n\\n    function caclulateHectaWeight() public view returns (uint256) {\\n        uint256 pHectaPoint = pHectaWeight() * pHecta.totalSupply();\\n        uint256 tHectaPoint = tHectaWeight() * tHecta.totalSupply();\\n        uint256 circulatingSupply = hectaCirculatingSupply.circulatingSupply();\\n        if (circulatingSupply == 0) return 0;\\n        if (TOTAL_POINT * 10**9 < pHectaPoint + tHectaPoint) return 0;\\n        return (TOTAL_POINT * 10**9 - pHectaPoint - tHectaPoint) / circulatingSupply;\\n    }\\n\\n    function setAddresses(\\n        address _hectaCirculatingSupply,\\n        address _pHecta,\\n        address _tHecta,\\n        address _gHecta\\n    ) public onlyOwner {\\n        require(_hectaCirculatingSupply != address(0), \\\"Zero address: HECTA\\\");\\n        hectaCirculatingSupply = IHectaCirculatingSupply(_hectaCirculatingSupply);\\n        require(_pHecta != address(0), \\\"Zero address: pHECTA\\\");\\n        pHecta = IERC20(_pHecta);\\n        require(_tHecta != address(0), \\\"Zero address: tHECTA\\\");\\n        tHecta = IERC20(_tHecta);\\n        require(_gHecta != address(0), \\\"Zero address: gHecta\\\");\\n        gHecta = IgHECTA(_gHecta);\\n    }\\n}\\n\",\"keccak256\":\"0x4dd535392a7661cf78b29120ceb25a8ef45d14feca8c9f135115fd7bf74d958c\",\"license\":\"MIT\"},\"contracts/interfaces/IHectaCirculatingSupply.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity >=0.8.0;\\n\\ninterface IHectaCirculatingSupply {\\n    function circulatingSupply() external view returns (uint256);\\n}\\n\",\"keccak256\":\"0x856e161bda26b44636c2af27ed2504e49246bdc8bbf048e36ac08a1b8775ed2f\",\"license\":\"MIT\"},\"contracts/interfaces/IgHECTA.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity >=0.8.0;\\n\\nimport \\\"@openzeppelin/contracts/interfaces/IERC4626.sol\\\";\\n\\ninterface IgHECTA is IERC4626 {\\n    function nextEpoch() external returns (uint256);\\n\\n    function index() external view returns (uint256);\\n\\n    function setDistributor(address _distributor) external;\\n\\n    function bountyHunter() external;\\n}\\n\",\"keccak256\":\"0x1faea97343c58dc20391fe1045c0dc4717f60b3520723213d38daab74aaa7239\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50604051610b83380380610b8383398101604081905261002f91610272565b61003833610206565b6001600160a01b0384166100935760405162461bcd60e51b815260206004820152601360248201527f5a65726f20616464726573733a2048454354410000000000000000000000000060448201526064015b60405180910390fd5b600180546001600160a01b0319166001600160a01b038681169190911790915583166101015760405162461bcd60e51b815260206004820152601460248201527f5a65726f20616464726573733a20704845435441000000000000000000000000604482015260640161008a565b600280546001600160a01b0319166001600160a01b0385811691909117909155821661016f5760405162461bcd60e51b815260206004820152601460248201527f5a65726f20616464726573733a20744845435441000000000000000000000000604482015260640161008a565b600380546001600160a01b0319166001600160a01b038481169190911790915581166101dd5760405162461bcd60e51b815260206004820152601460248201527f5a65726f20616464726573733a20674865637461000000000000000000000000604482015260640161008a565b600480546001600160a01b0319166001600160a01b0392909216919091179055506102c6915050565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b80516001600160a01b038116811461026d57600080fd5b919050565b6000806000806080858703121561028857600080fd5b61029185610256565b935061029f60208601610256565b92506102ad60408601610256565b91506102bb60608601610256565b905092959194509250565b6108ae806102d56000396000f3fe608060405234801561001057600080fd5b50600436106100df5760003560e01c80638155fa6c1161008c578063a3ff0c4e11610066578063a3ff0c4e14610195578063b2e1e000146100e4578063ec71e0eb1461019d578063f2fde38b146101a957600080fd5b80638155fa6c1461015e5780638da5cb5b14610171578063931ae9851461018257600080fd5b80634244bc56116100bd5780634244bc561461012e5780634a945f8d14610141578063715018a61461015657600080fd5b806304a70281146100e45780632b430bc7146100fb578063332b367314610103575b600080fd5b6101f45b6040519081526020015b60405180910390f35b6100e86101bc565b600154610116906001600160a01b031681565b6040516001600160a01b0390911681526020016100f2565b600454610116906001600160a01b031681565b61015461014f36600461078c565b6103be565b005b610154610590565b600254610116906001600160a01b031681565b6000546001600160a01b0316610116565b600354610116906001600160a01b031681565b6100e86105a4565b6100e864174876e80081565b6101546101b73660046107e0565b610636565b600080600260009054906101000a90046001600160a01b03166001600160a01b03166318160ddd6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610212573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102369190610802565b610242906101f4610831565b90506000600360009054906101000a90046001600160a01b03166001600160a01b03166318160ddd6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610299573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102bd9190610802565b6102c9906101f4610831565b90506000600160009054906101000a90046001600160a01b03166001600160a01b0316639358928b6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610320573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906103449190610802565b905080610355576000935050505090565b61035f8284610850565b61037264174876e800633b9aca00610831565b1015610382576000935050505090565b80828461039864174876e800633b9aca00610831565b6103a29190610868565b6103ac9190610868565b6103b6919061087f565b935050505090565b6103c66106c6565b6001600160a01b0384166104215760405162461bcd60e51b815260206004820152601360248201527f5a65726f20616464726573733a2048454354410000000000000000000000000060448201526064015b60405180910390fd5b600180546001600160a01b0319166001600160a01b0386811691909117909155831661048f5760405162461bcd60e51b815260206004820152601460248201527f5a65726f20616464726573733a207048454354410000000000000000000000006044820152606401610418565b600280546001600160a01b0319166001600160a01b038581169190911790915582166104fd5760405162461bcd60e51b815260206004820152601460248201527f5a65726f20616464726573733a207448454354410000000000000000000000006044820152606401610418565b600380546001600160a01b0319166001600160a01b0384811691909117909155811661056b5760405162461bcd60e51b815260206004820152601460248201527f5a65726f20616464726573733a206748656374610000000000000000000000006044820152606401610418565b600480546001600160a01b0319166001600160a01b0392909216919091179055505050565b6105986106c6565b6105a26000610720565b565b6004805460408051632986c0e560e01b81529051600093633b9aca00936001600160a01b031692632986c0e592818301926020928290030181865afa1580156105f1573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906106159190610802565b61061d6101bc565b6106279190610831565b610631919061087f565b905090565b61063e6106c6565b6001600160a01b0381166106ba5760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201527f64647265737300000000000000000000000000000000000000000000000000006064820152608401610418565b6106c381610720565b50565b6000546001600160a01b031633146105a25760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152606401610418565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b80356001600160a01b038116811461078757600080fd5b919050565b600080600080608085870312156107a257600080fd5b6107ab85610770565b93506107b960208601610770565b92506107c760408601610770565b91506107d560608601610770565b905092959194509250565b6000602082840312156107f257600080fd5b6107fb82610770565b9392505050565b60006020828403121561081457600080fd5b5051919050565b634e487b7160e01b600052601160045260246000fd5b600081600019048311821515161561084b5761084b61081b565b500290565b600082198211156108635761086361081b565b500190565b60008282101561087a5761087a61081b565b500390565b60008261089c57634e487b7160e01b600052601260045260246000fd5b50049056fea164736f6c634300080a000a",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100df5760003560e01c80638155fa6c1161008c578063a3ff0c4e11610066578063a3ff0c4e14610195578063b2e1e000146100e4578063ec71e0eb1461019d578063f2fde38b146101a957600080fd5b80638155fa6c1461015e5780638da5cb5b14610171578063931ae9851461018257600080fd5b80634244bc56116100bd5780634244bc561461012e5780634a945f8d14610141578063715018a61461015657600080fd5b806304a70281146100e45780632b430bc7146100fb578063332b367314610103575b600080fd5b6101f45b6040519081526020015b60405180910390f35b6100e86101bc565b600154610116906001600160a01b031681565b6040516001600160a01b0390911681526020016100f2565b600454610116906001600160a01b031681565b61015461014f36600461078c565b6103be565b005b610154610590565b600254610116906001600160a01b031681565b6000546001600160a01b0316610116565b600354610116906001600160a01b031681565b6100e86105a4565b6100e864174876e80081565b6101546101b73660046107e0565b610636565b600080600260009054906101000a90046001600160a01b03166001600160a01b03166318160ddd6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610212573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102369190610802565b610242906101f4610831565b90506000600360009054906101000a90046001600160a01b03166001600160a01b03166318160ddd6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610299573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102bd9190610802565b6102c9906101f4610831565b90506000600160009054906101000a90046001600160a01b03166001600160a01b0316639358928b6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610320573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906103449190610802565b905080610355576000935050505090565b61035f8284610850565b61037264174876e800633b9aca00610831565b1015610382576000935050505090565b80828461039864174876e800633b9aca00610831565b6103a29190610868565b6103ac9190610868565b6103b6919061087f565b935050505090565b6103c66106c6565b6001600160a01b0384166104215760405162461bcd60e51b815260206004820152601360248201527f5a65726f20616464726573733a2048454354410000000000000000000000000060448201526064015b60405180910390fd5b600180546001600160a01b0319166001600160a01b0386811691909117909155831661048f5760405162461bcd60e51b815260206004820152601460248201527f5a65726f20616464726573733a207048454354410000000000000000000000006044820152606401610418565b600280546001600160a01b0319166001600160a01b038581169190911790915582166104fd5760405162461bcd60e51b815260206004820152601460248201527f5a65726f20616464726573733a207448454354410000000000000000000000006044820152606401610418565b600380546001600160a01b0319166001600160a01b0384811691909117909155811661056b5760405162461bcd60e51b815260206004820152601460248201527f5a65726f20616464726573733a206748656374610000000000000000000000006044820152606401610418565b600480546001600160a01b0319166001600160a01b0392909216919091179055505050565b6105986106c6565b6105a26000610720565b565b6004805460408051632986c0e560e01b81529051600093633b9aca00936001600160a01b031692632986c0e592818301926020928290030181865afa1580156105f1573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906106159190610802565b61061d6101bc565b6106279190610831565b610631919061087f565b905090565b61063e6106c6565b6001600160a01b0381166106ba5760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201527f64647265737300000000000000000000000000000000000000000000000000006064820152608401610418565b6106c381610720565b50565b6000546001600160a01b031633146105a25760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e65726044820152606401610418565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b80356001600160a01b038116811461078757600080fd5b919050565b600080600080608085870312156107a257600080fd5b6107ab85610770565b93506107b960208601610770565b92506107c760408601610770565b91506107d560608601610770565b905092959194509250565b6000602082840312156107f257600080fd5b6107fb82610770565b9392505050565b60006020828403121561081457600080fd5b5051919050565b634e487b7160e01b600052601160045260246000fd5b600081600019048311821515161561084b5761084b61081b565b500290565b600082198211156108635761086361081b565b500190565b60008282101561087a5761087a61081b565b500390565b60008261089c57634e487b7160e01b600052601260045260246000fd5b50049056fea164736f6c634300080a000a",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      },
+      "renounceOwnership()": {
+        "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner."
+      },
+      "transferOwnership(address)": {
+        "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 7,
+        "contract": "contracts/Snapshot.sol:Snapshot",
+        "label": "_owner",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 7847,
+        "contract": "contracts/Snapshot.sol:Snapshot",
+        "label": "hectaCirculatingSupply",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_contract(IHectaCirculatingSupply)8634"
+      },
+      {
+        "astId": 7850,
+        "contract": "contracts/Snapshot.sol:Snapshot",
+        "label": "pHecta",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_contract(IERC20)1052"
+      },
+      {
+        "astId": 7853,
+        "contract": "contracts/Snapshot.sol:Snapshot",
+        "label": "tHecta",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_contract(IERC20)1052"
+      },
+      {
+        "astId": 7856,
+        "contract": "contracts/Snapshot.sol:Snapshot",
+        "label": "gHecta",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_contract(IgHECTA)9170"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_contract(IERC20)1052": {
+        "encoding": "inplace",
+        "label": "contract IERC20",
+        "numberOfBytes": "20"
+      },
+      "t_contract(IHectaCirculatingSupply)8634": {
+        "encoding": "inplace",
+        "label": "contract IHectaCirculatingSupply",
+        "numberOfBytes": "20"
+      },
+      "t_contract(IgHECTA)9170": {
+        "encoding": "inplace",
+        "label": "contract IgHECTA",
+        "numberOfBytes": "20"
+      }
+    }
+  }
+}
