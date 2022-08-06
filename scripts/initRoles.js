@@ -20,6 +20,10 @@ async function main() {
     await tx.wait();
     console.log("pushGuardian success");
 
+    tx = await treasury.enable("0", guardianAddress);
+    await tx.wait();
+    console.log("treasury set guardian as TREASURYMANAGER success");
+
     tx = await authority.pushPolicy(policyAddress, true);
     await tx.wait();
     console.log("pushPolicy success");
@@ -27,10 +31,6 @@ async function main() {
     tx = await authority.pushGovernor(governorAddress, true);
     await tx.wait();
     console.log("pushGovernor success");
-
-    tx = await treasury.enable("0", guardianAddress);
-    await tx.wait();
-    console.log("treasury set guardian as TREASURYMANAGER success");
 }
 
 // We recommend this pattern to be able to use async/await everywhere
