@@ -7,7 +7,7 @@
 
  - Approve smartcontract to be to transfer `BUSD`, pHecta out of their wallet
  - Run the smartcontract of which will transfer 1 `BUSD` to the treasury, burn 1 pHecta then recalculate pHecta holder's `max_claim`
- 6. At each point in time the claimed amount of pHeacta is less than 10% of the Hecta total supply
+ 6. At each point in time the claimed amount of pHeacta is less than 10% of total HECTA in circulation (total supply minus HECTA in the Treasury)
 
 
  # What is a space?
