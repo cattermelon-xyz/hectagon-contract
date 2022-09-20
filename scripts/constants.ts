@@ -10,6 +10,8 @@ export const CONTRACTS: Record<string, string> = {
     circulatingSupply: "HectaCirculatingSupply",
     snapshot: "Snapshot",
     quickBond: "HectagonQuickBond",
+    investmentCouncil: "HectagonInvestmentCouncil",
+    investmentTeam: "HectagonInvestmentTeam",
 };
 
 export const ADDRESSES: Record<string, string> = {
